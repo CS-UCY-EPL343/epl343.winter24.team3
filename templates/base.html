@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Trackventory</title>
+        <link rel="stylesheet" href="..\static\css\styles.css">
+    </head>
+    <body>
+        <!-- Top Bar -->
+        <div class="top-bar" id="topBar" name="topBar">
+            <img class="logo" src="..\static\images\logo.jpg" alt="Logo" />
+            <div class="title">Trackventory</div>
+            <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+            <div class="user-actions">
+                <a>Switch User</a>
+                <a href="/logout" class="logout">Log Out</a>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+        <div class="sidebar" id="sidebar" name="sidebar">
+            <div class="has-dropdown">
+                <a href="#">Stock</a>
+                <div class="dropdown">
+                    <a href="#">Gin</a>
+                    <a href="#">Vodka</a>
+                    <a href="#">Wine</a>
+                </div>
+            </div>
+            <a href="#">Report</a>
+            <a href="#">Transaction</a>
+            <a href="#">Bulk Addition</a>
+            <a href="#">Bulk Removal</a>
+        </div>
+        <div class="content">
+            <div class="topbar">
+                <div>Trackventory</div>
+                <div>
+                    <a href="#">Switch User</a>
+                    <a href="#">Log Out</a>
+                </div>
+            </div>
+        
+            <!-- Main Content -->
+        <div class="content">
+            {% block content %}
+            {% endblock %} 
+        </div>
+
+        <!-- Link to JavaScript File -->
+        <script src="..\static\js\scripts.js"></script>
+    </body>
+</html>
