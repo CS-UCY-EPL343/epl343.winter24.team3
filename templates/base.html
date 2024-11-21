@@ -9,41 +9,59 @@
     <body>
         <!-- Top Bar -->
         <div class="top-bar" id="topBar" name="topBar">
-            <img class="logo" src="..\static\images\logo.jpg" alt="Logo" />
+            <img class="logo" src="..\static\images\logo.jpg" alt="Logo" onclick="toggleSidebar()" />
             <div class="title">Trackventory</div>
-            <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
             <div class="user-actions">
-                <a>Switch User</a>
-                <a href="/logout" class="logout">Log Out</a>
+                <div class="user-dropdown">
+                    <a class= "switch" href="#" onclick="toggleUserDropdown(event)">SWITCH USER</a>
+                    <div class="udropdown">
+                        <!-- {% for user in quick_switch_users %}
+                            <a>{{user}}</a>
+                        {% end for %} -->
+                        <!-- post request / -->
+                        <a href="#">| ekrigk01</a>
+                        <a href="#">| souvenirhnw</a>
+                        <a href="#">| taratsahnw</a>
+                        <a href="#">| highnwet</a>
+                        <a class = "add-user"href="#">+ ADD USER</a>
+                        
+                    </div>
+                </div>        
+                <a href="/logout" class="logout">LOG OUT</a>
             </div>
         </div>
 
         <!-- Sidebar -->
-        <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
         <div class="sidebar" id="sidebar" name="sidebar">
-            <div class="has-dropdown">
-                <a href="#">Stock</a>
+            <div class="sidebar-dropdown">
+                <a href="/" onclick="toggleDropdown(event)">INVENTORY</a>
                 <div class="dropdown">
-                    <a href="#">Gin</a>
-                    <a href="#">Vodka</a>
-                    <a href="#">Wine</a>
+                    <!-- {% for category in categories %}
+                        <a>{{category}}</a>
+                    {% end for %} -->
+                    <a href="#">| GIN</a>
+                    <a href="#">| VODKA</a>
+                    <a href="#">| TEQUILA</a>
+                    <a href="#">| WINE</a>
+                    <a href="#">| BEERS</a>
                 </div>
             </div>
-            <a href="#">Report</a>
-            <a href="#">Transaction</a>
-            <a href="#">Bulk Addition</a>
-            <a href="#">Bulk Removal</a>
+            <div class="sidebar-dropdown">
+                <a href="/transactions" onclick="toggleDropdown(event)">TRANSACTIONS</a>
+                <div class="dropdown">
+                    <!-- {% for reqs in requests %}
+                        <a>{{reqs}}</a>
+                    {% end for %} -->
+                    <a href="#">| INCOMING REQUESTS</a>
+                    <a href="#">| OUTGOING REQUESTS</a>
+                </div>
+            </div>
+            <a href="/bulkIncrease">BULK ADDITION</a>
+            <a href="/bulkDecrease">BULK REMOVAL</a>
+            <a href="/report">REPORT</a>
         </div>
-        <div class="content">
-            <div class="topbar">
-                <div>Trackventory</div>
-                <div>
-                    <a href="#">Switch User</a>
-                    <a href="#">Log Out</a>
-                </div>
-            </div>
         
-            <!-- Main Content -->
+        <!-- Main Content -->
         <div class="content">
             {% block content %}
             {% endblock %} 
