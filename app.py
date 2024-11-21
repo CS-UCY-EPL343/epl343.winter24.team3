@@ -96,6 +96,10 @@ def CheckQuickSwitch() -> bool|str:
     # If nothing happened
     return False
 
+@app.route('/', methods=['GET'])
+def index():
+    return redirect(url_for('login'))
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
@@ -219,7 +223,7 @@ def viewInventory():
             flash('An error occurred while retrieving data.', 'error')
             return redirect(url_for('viewInventory'), 500)
         
-        return render_template('viewInventory.html', inventory_data= inventory_data, quick_switch_users= quick_switch_users,
+        return render_template('inventory.html', inventory_data= inventory_data, quick_switch_users= quick_switch_users,
                                 category_options= category_options, supplier_options= supplier_options), 200
 
     elif request.method == 'POST':
@@ -319,7 +323,7 @@ def viewInventory():
                 return redirect(url_for('viewInventory'), 500)
                  
             # Pass the data to the template
-            return render_template('viewInventory.html', inventory_data=filtered_data, quick_switch_users=quick_switch_users,
+            return render_template('inventory.html', inventory_data=filtered_data, quick_switch_users=quick_switch_users,
                     category_options=category_options, supplier_options=supplier_options), 200
 
         return redirect(url_for('viewInventory'), 200)
