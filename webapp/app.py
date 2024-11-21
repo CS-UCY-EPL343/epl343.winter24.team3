@@ -202,7 +202,7 @@ def logout():
         session.modified = True 
     return redirect(url_for('login'))
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/inventory', methods=['GET', 'POST'])
 def viewInventory():
     # If not logged in
     if 'username' not in session:
