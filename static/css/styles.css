@@ -157,3 +157,24 @@ html, body {
 .add-user{
     border-top: 2px solid #ce9eff; 
 }
+
+
+.inventory-container {
+    padding: 20px;
+    margin-left: 250px;
+    margin-top: 80px;
+}
+
+.inventory-section {
+    padding: 20px;
+    margin-bottom: 30px;
+    border: 1px solid #ce9eff; /* Light lavender border */
+    border-radius: 10px;
+    background-color: #f3e9ff; /* Light purple background */
+    color: #4a007e; /* Deep purple text */
+}
+
+.inventory-section h2 {
+    margin-bottom: 10px;
+    color: #6a0dad; /* Medium purple heading */
+}
