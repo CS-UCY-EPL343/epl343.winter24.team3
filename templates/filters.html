@@ -1,0 +1,69 @@
+<!-- just for reference -->
+ 
+<form method="POST" action="{{ url_for('viewInventory') }}">
+    <!-- Hidden field to track form submission -->
+    <input type="hidden" name="formSubmitted" value="{{ 'True' if form_submitted else 'False' }}">
+
+    <!-- Category Filter -->
+    <div>
+        <label for="filterCategory">Category:</label>
+        <select name="filterCategory" id="filterCategory">
+            <option value="">All</option>
+            {% for category in category_options %}
+                <option value="{{ category }}">{{ category }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Supplier Filter -->
+    <div>
+        <label for="filterSupplier">Supplier:</label>
+        <select name="filterSupplier" id="filterSupplier">
+            <option value="">All</option>
+            {% for supplier in supplier_options %}
+                <option value="{{ supplier }}">{{ supplier }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Quantity Filter -->
+    <div>
+        <label for="filterQuantity">Quantity:</label>
+        <select name="filterQuantity" id="filterQuantity">
+            <option value="">All</option>
+            <option value="unavailable">Unavailable</option>
+            <option value="zero">Zero</option>
+            <option value="below_minimum">Below Minimum</option>
+            <option value="close_to_minimum">Close to Minimum</option>
+            <option value="many">Many</option>
+        </select>
+    </div>
+
+    <button type="submit">Apply Filters</button>
+</form>
+
+<!-- Display filtered inventory items -->
+{% if inventory_data %}
+    <table>
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Category</th>
+                <th>Supplier</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in inventory_data %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.category }}</td>
+                    <td>{{ item.supplier }}</td>
+                    <td>{{ item.quantity }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No items found with the selected filters.</p>
+{% endif %}
