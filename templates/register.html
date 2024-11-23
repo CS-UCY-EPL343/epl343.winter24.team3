@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar Register</title>
+    <link rel="stylesheet" href="../static/css/entrance.css">
+</head>
+<body>
+    <div class="login-container">
+        <!-- Logo Image -->
+        <img src="../static/images/logo.jpg" alt="Trackventory Logo" class="logo">
+
+        <!-- Register Form -->
+        <div id="register-form">
+            <form id="register-form-element" action="#" method="post">
+                <label for="new-username"></label>
+                <input type="text" id="new-username" name="username" placeholder="Enter a username" required>
+
+                <label for="new-password"></label>
+                <input type="password" id="new-password" name="password" placeholder="Enter a password" required>
+
+                <label for="confirm-password"></label>
+                <input type="password" id="confirm-password" name="confirm-password" placeholder="Repeat your password" required>
+
+                <!-- Password Error -->
+                <span id="password-error" style="color: red; display: none;">The Passwords do not match.</span>
+
+                <!-- Register Button -->
+                <button type="submit">Register</button>
+            </form>
+
+            <!-- Login Link -->
+            <p id="switch-login" class="toggle-form">
+                Already have an account? <a href="login.html"><strong>Log In</strong></a>
+            </p>
+        </div>
+    </div>
+
+    <script src="register.js"></script>
+</body>
+</html>

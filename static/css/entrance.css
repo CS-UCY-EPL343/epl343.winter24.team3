@@ -1,0 +1,96 @@
+/* Background για όλη τη σελίδα */
+body {
+    background-color: #5a189a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh; 
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+
+/* Στυλ για το container του login form */
+.login-container {
+
+    background-color:rgba(255, 255, 255, 0.9);/* Background του login form */
+    width: 350px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    margin-top: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+/* για το λογότυπο */
+.logo {
+    display: block;
+    margin: 20px auto;
+    max-width: 200px;
+    margin-bottom: 20px;
+}
+
+/* τα κουμπιά login και register */
+button[type="submit"] {
+    background-color: #5d5659;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 16px; /* Μεγέθυνση κειμένου */
+    margin-top: 10px; /* Κενό ανάμεσα στο μήνυμα και το κουμπί */
+    transition: backround-colour 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #271644;
+}
+
+/*  πεδία εισαγωγής */
+input[type="text"], input[type="password"]{
+    width: 90%;
+    max-width: 250px;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.1);
+    display: block;
+}
+
+/* μήνυμα λάθους στο login */
+.error-message {
+    color: red;
+    display: none;
+    font-size: 12px;
+    margin-top: 5px;
+    text-transform: uppercase; /* Κεφαλαία */
+}
+
+/* Κείμενο και κουμπί για εναλλαγή μεταξύ login και register */
+.toggle-form {
+    color: black;
+    cursor: pointer;
+    margin-top: 30px;
+    font-size: 15px;
+}
+
+.toggle-form strong {
+    font-weight: bold;
+}
+
+.remember-me {
+    margin: 10px 50px; /* Απόσταση πάνω και κάτω */
+    display: flex;
+    align-items: center;
+}
+
+.remember-me input[type="checkbox"] {
+    margin-right: 5px; /* Απόσταση από το label */
+}
