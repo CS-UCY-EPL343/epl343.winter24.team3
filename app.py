@@ -96,12 +96,16 @@ def CheckQuickSwitch() -> bool|str:
     # If nothing happened
     return False
 
+@app.route('/', methods=['GET'])
+def index():
+    return redirect(url_for('login'))
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
         # from remember me
         if 'username' in session:
-            return redirect(url_for('viewInventory'))
+            return redirect(url_for('inventory'))
         
         # If not log in
         return render_template('login.html'), 200
@@ -142,7 +146,7 @@ def login():
             session.modified = True
             session.permanent = True
         # goto index page
-        return redirect(url_for('viewInventory'), 200)
+        return redirect(url_for('inventory'), 200)
     
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -202,8 +206,8 @@ def logout():
         session.modified = True 
     return redirect(url_for('login'))
 
-@app.route('/', methods=['GET', 'POST'])
-def viewInventory():
+@app.route('/inventory', methods=['GET', 'POST'])
+def inventory():
     # If not logged in
     if 'username' not in session:
         return render_template('login.html')
@@ -217,18 +221,18 @@ def viewInventory():
             supplier_options: list[dict] = db.getSupplierOptions(session.get('UID')) # TO
         except:
             flash('An error occurred while retrieving data.', 'error')
-            return redirect(url_for('viewInventory'), 500)
+            return redirect(url_for('inventory'), 500)
         
-        return render_template('viewInventory.html', inventory_data= inventory_data, quick_switch_users= quick_switch_users,
+        return render_template('inventory.html', inventory_data= inventory_data, quick_switch_users= quick_switch_users,
                                 category_options= category_options, supplier_options= supplier_options), 200
 
     elif request.method == 'POST':
         # Check quick switch or add new quick switch user
         cqs = CheckQuickSwitch()
         if cqs == True: 
-            return redirect(url_for('viewInventory'))
+            return redirect(url_for('inventory'))
         elif cqs == 'switch':
-            return redirect(url_for('viewInventory'), 200)
+            return redirect(url_for('inventory'), 200)
 
         # get data
         if request.form.get('updateEntry') or request.form.get('createEntry'):
@@ -239,55 +243,55 @@ def viewInventory():
             item_name: str = request.form.get('item_name')
             if item_name is None or len(item_name) == 0 or len(item_name) > N:
                 flash('Invalid item name.', 'error')
-                return redirect(url_for('viewInventory'), 400)
+                return redirect(url_for('inventory'), 400)
             
             # Size
             item_size: str = request.form.get('item_size')
             try:
                 if int(item_size) < 0:
                     flash('Invalid size value.', 'error')
-                    return redirect(url_for('viewInventory'), 400)
+                    return redirect(url_for('inventory'), 400)
             except ValueError:
                 flash('Invalid size value.', 'error')
-                return redirect(url_for('viewInventory'), 200)
+                return redirect(url_for('inventory'), 200)
             
             # Category
             item_category: str = request.form.get('item_category')
             if item_category is None or len(item_category) == 0 or len(item_category) > N:
                 flash('Invalid category value.', 'error')
-                return redirect(url_for('viewInventory'), 400)
+                return redirect(url_for('inventory'), 400)
             
             # Supplier
             item_supplier: str = request.form.get('item_supplier')
             if item_supplier is None or len(item_supplier) == 0 or len(item_supplier) > N:
                 flash('Invalid supplier value.', 'error')
-                return redirect(url_for('viewInventory'), 400)
+                return redirect(url_for('inventory'), 400)
             
             # MinReq
             item_min_requirement: str = request.form.get('item_min_requirement')
             try:
                 if int(item_min_requirement) < 0:
                     flash('Invalid minimum requirement value.', 'error')
-                    return redirect(url_for('viewInventory'), 400)
+                    return redirect(url_for('inventory'), 400)
             except ValueError:
                 flash('Invalid minimum requirement value.', 'error')
-                return redirect(url_for('viewInventory'), 400)
+                return redirect(url_for('inventory'), 400)
             
             # Photo
             item_photo: str = request.form.get('item_photo')
             if len(item_photo) > N:
                 flash('Invalid photo value.', 'error')
-                return redirect(url_for('viewInventory'), 400)
+                return redirect(url_for('inventory'), 400)
             
             # Quantity
             item_quantity: str = request.form.get('item_quantity')
             try:
                 if int(item_quantity) < 0:
                     flash('Invalid quantity value.', 'error')
-                    return redirect(url_for('viewInventory'), 400)
+                    return redirect(url_for('inventory'), 400)
             except ValueError:
                 flash('Invalid quantity value.', 'error')
-                return redirect(url_for('viewInventory'), 400)
+                return redirect(url_for('inventory'), 400)
             
             # Update the DB # TO
             try:
@@ -298,7 +302,7 @@ def viewInventory():
             except Exception as e:
                 print(e)
                 flash('Error occurred while updating entry data.', 'error')
-                return redirect(url_for('viewInventory'), 500)
+                return redirect(url_for('inventory'), 500)
             flash('Item updated successfully','success') # TO
 
         # Get the filter values
@@ -316,13 +320,13 @@ def viewInventory():
             except Exception as e:
                 print(e)
                 flash('An error occurred while retrieving data.', 'error')
-                return redirect(url_for('viewInventory'), 500)
+                return redirect(url_for('inventory'), 500)
                  
             # Pass the data to the template
-            return render_template('viewInventory.html', inventory_data=filtered_data, quick_switch_users=quick_switch_users,
+            return render_template('inventory.html', inventory_data=filtered_data, quick_switch_users=quick_switch_users,
                     category_options=category_options, supplier_options=supplier_options), 200
 
-        return redirect(url_for('viewInventory'), 200)
+        return redirect(url_for('inventory'), 200)
 
 @app.route('/report', methods=['GET', 'POST'])
 def viewReport():
@@ -347,7 +351,7 @@ def viewReport():
         if cqs == True: 
             return redirect(url_for('viewReport'), 200)
         elif cqs == 'switch':
-            return redirect(url_for('viewInventory'))
+            return redirect(url_for('inventory'))
         
          # TO If the user can do anything here
 
@@ -377,7 +381,7 @@ def transactions():
         if cqs == True: 
             return redirect(url_for('transactions'), 200)
         elif cqs == 'switch':
-            return redirect(url_for('viewInventory'))
+            return redirect(url_for('inventory'))
 
          # TO SEARCH AND FILTER
         
@@ -468,7 +472,7 @@ def bulkIncrease():
         if cqs == True: 
             return redirect(url_for('bulkIncrease'), 200)
         elif cqs == 'switch':
-            return redirect(url_for('viewInventory'))
+            return redirect(url_for('inventory'))
 
         # Bulk increase
         # Check if the submit button was pressed
@@ -488,7 +492,7 @@ def bulkIncrease():
                         flash('Error increasing quantity for product: {product_uid}', 'error')
 
             flash('Bulk increase successful!', 'success')
-            return redirect(url_for('viewInventory'))
+            return redirect(url_for('inventory'))
 
         return redirect(url_for('bulkIncrease'), 200) 
 
@@ -514,7 +518,7 @@ def bulkDecrease():
         if cqs == True: 
             return redirect(url_for('bulkDecrease'), 200)
         elif cqs == 'switch':
-            return redirect(url_for('viewInventory'))
+            return redirect(url_for('inventory'))
 
         # Bulk decrease
         # Check if the submit button was pressed
@@ -539,7 +543,7 @@ def bulkDecrease():
                         flash('Error decreasing quantity for product: {product_uid}', 'error')
 
             flash('Bulk decrease successful!', 'success')
-            return redirect(url_for('viewInventory'))
+            return redirect(url_for('inventory'))
 
         return redirect(url_for('bulkDecrease'), 200) 
 
@@ -566,7 +570,7 @@ def _():
         if cqs == True: 
             return redirect(url_for('_'))
         elif cqs == 'switch':
-            return redirect(url_for('viewInventory'))
+            return redirect(url_for('inventory'))
         #
         return redirect(url_for('_'))
 
