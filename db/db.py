@@ -2,13 +2,14 @@ import sqlite3
 import hashlib
 import os
 
+#return all entries or none when query is empty?
 def search_inventory(uid, query):
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('epl343.db')
     # > create cursor to access the db.
     cursor = connection.cursor()
-    searchInv = """SELECT * FROM ENTRY WHERE UID = (?) AND NAME LIKE '%?%'"""
-    cursor.execute(searchInv, (uid, query))
+    searchInv = """SELECT * FROM ENTRY WHERE UID = (?) AND NAME LIKE (?)"""
+    cursor.execute(searchInv, (uid, '%' + query + '%'))
     rows = cursor.fetchall()
     connection.close()
     return rows    
@@ -18,13 +19,13 @@ def get_quick_switch_users(uid):
     connection = sqlite3.connect('epl343.db')
     # > create cursor to access the db.
     cursor = connection.cursor()
-    qsUsers = """SELECT U.USERNAME FROM USER U WHERE U.UID IN(SELECT Q.USER_OTHER FROM QUICK_ACCESS Q WHERE Q.UID = (?))"""
+    qsUsers = """SELECT U.USERNAME FROM USER U WHERE U.UID IN(SELECT Q.UID_OTHER FROM QUICK_ACCESS Q WHERE Q.UID = (?))"""
     cursor.execute(qsUsers, (uid,))
     rows = cursor.fetchall()
     connection.close()
     return rows
 
-def get_user_uid(new_username):
+def get_user_uid(new_username): 
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('epl343.db')
     # > create cursor to access the db.
@@ -33,7 +34,7 @@ def get_user_uid(new_username):
     cursor.execute(getUid, (new_username,))
     uid = cursor.fetchall()
     connection.close()
-    return uid
+    return uid[0][0]
 
 def validate_user(new_username, password):
     # > connect if db exist - create if database doesn't.
@@ -52,17 +53,19 @@ def validate_user(new_username, password):
         return False    
 
 def add_quick_switch_user(uid, new_username):
+    new_uid = get_user_uid(new_username)
+    if new_uid == uid:
+        raise ValueError("Quick Access User can't be same as current user!")
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('epl343.db')
     # > create cursor to access the db.
-    new_uid = get_user_uid(new_username)
     cursor = connection.cursor()
     newQSuser = """INSERT INTO QUICK_ACCESS (UID, UID_OTHER) VALUES (?, ?)"""
-    cursor.execute(newQSuser, (uid, new_uid))
+    cursor.execute(newQSuser, (uid, new_uid[0]))
     connection.commit()
     connection.close()
 
-def user_exists(username):
+def user_exists(username): 
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('epl343.db')
     cursor = connection.cursor()
@@ -99,7 +102,7 @@ def get_inventory_data(uid):
     connection.close()
     return rows
 
-def get_category_options(uid):
+def get_category_options(uid): 
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('epl343.db')
     # > create cursor to access the db.
@@ -110,7 +113,7 @@ def get_category_options(uid):
     connection.close()
     return rows
 
-def get_supplier_options(uid):
+def get_supplier_options(uid): 
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('epl343.db')
     # > create cursor to access the db.
@@ -130,15 +133,15 @@ def update_entry(entry_id, name, size, category, supplier, minreq, photo, qnt, u
     cursor.execute(updEntry, (name, size, category, supplier, minreq, photo, qnt, unav, entry_id))
     connection.commit()
     connection.close()
-    if old_qnt[0] > qnt:
-        add_log_ent(entry_id, (qnt - old_qnt[0]))
+    if old_qnt != qnt:
+        add_log_ent(entry_id, (qnt - old_qnt))
 
-def create_entry(name, size, category, supplier, minreq, photo, qnt):
+def create_entry(name, size, category, supplier, minreq, photo, qnt, uid):
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('epl343.db')
     cursor = connection.cursor()
-    createEntry = """INSERT INTO ENTRY (NAME, SIZE, CATEGORY, SUPPLIER, MIN_REQUIREMENT, PHOTO, QNT, UNAVAIlABLE) VALUES (?, ?, ?, ?, ?, ?, ?, 'F')"""
-    cursor.execute(createEntry, (name, size, category, supplier, minreq, photo, qnt))
+    createEntry = """INSERT INTO ENTRY (NAME, SIZE, CATEGORY, SUPPLIER, MIN_REQUIREMENT, PHOTO, QNT, UNAVAILABLE, UID) VALUES (?, ?, ?, ?, ?, ?, ?, 'F', ?)"""
+    cursor.execute(createEntry, (name, size, category, supplier, minreq, photo, qnt, uid))
     connection.commit()
     connection.close()
 
@@ -189,7 +192,7 @@ def generate_report(uid):
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('epl343.db')
     cursor = connection.cursor()
-    report = """SELECT * FROM LOG WHERE (UID = (?)) AND (DATE <= datetime('now', 'localtime') AND (DATE <= datetime('now','-7 days', 'localtime'))"""
+    report = """SELECT * FROM LOG WHERE UID = (?) AND DATE_TIME <= datetime('now', 'localtime') AND DATE_TIME >= datetime('now','-7 days', 'localtime')"""
     cursor.execute(report, (uid,))
     rows = cursor.fetchall()
     connection.close()
@@ -206,7 +209,9 @@ def get_pending_transactions(uid):
     connection.close()
     return rows
 
-def add_transaction(uid, to_uid, entry_id, qnt):
+def add_transaction(uid, to_uid, entry_id, qnt): 
+    if uid == to_uid:
+        raise ValueError("Can't send transaction request to self!")
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('epl343.db')
     cursor = connection.cursor()
@@ -229,21 +234,21 @@ def transaction_exists(trans_id):
         return True
 
 #if reqUser sends bottles, qnty negative?
-def answer_transaction(trans_id, answer): 
+def answer_transaction(trans_id, answer):
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('epl343.db')
     cursor = connection.cursor()
     if answer:
-        getTrans = """SELECT UID_REQ_TRANS, UID_ANS_TRANS, ENTRY_ID, QNT FROM PENDING TRANSACTIONS WHERE TRANS_ID = (?)"""
+        getTrans = """SELECT UID_REQ_TRANS, UID_ANS_TRANS, ENTRY_ID, QNT FROM PENDING_TRANSACTIONS WHERE TRANS_ID = (?)"""
         cursor.execute(getTrans, (trans_id,))
         values = cursor.fetchall()
         uidReq, uidAns, entry_id_req, qnt = values[0]
-        getAnsEid = """SELECT A.ENTRY_ID FROM ENTRY R, ENTRY A WHERE R.ENTRY_ID = (?) AND A.UID = (?) AND A.NAME = R.NAME AND A.SIZE = R.SIZE"""
+        getAnsEid = """SELECT A.ENTRY_ID FROM ENTRY A, ENTRY R WHERE R.ENTRY_ID = (?) AND A.UID = (?) AND A.NAME = R.NAME AND A.SIZE = R.SIZE"""
         cursor.execute(getAnsEid, (entry_id_req, uidAns))
         values = cursor.fetchall()
-        entry_id_ans = values[0]
-        increase_quantity(entry_id_req, qnt)
+        entry_id_ans = values[0][0]
         decrease_quantity(entry_id_ans, qnt)
+        increase_quantity(entry_id_req, qnt)
     delTrans = """DELETE FROM PENDING_TRANSACTIONS WHERE TRANS_ID = (?)"""
     cursor.execute(delTrans, (trans_id,))
     connection.commit()
@@ -255,25 +260,25 @@ def increase_quantity(entry_id, qnt):
     cursor = connection.cursor()
     old_qnt = get_quantity(entry_id)
     incQnt = "UPDATE ENTRY SET QNT = (?) WHERE ENTRY_ID = (?)"
-    cursor.execute(incQnt, ((int(old_qnt[0])+qnt), entry_id))
+    cursor.execute(incQnt, ((old_qnt+qnt), entry_id))
     connection.commit()
     connection.close()
     add_log_ent(entry_id, qnt)
 
-def decrease_quantity(entry_id, qnt): 
+def decrease_quantity(entry_id, qnt):
+    old_qnt = get_quantity(entry_id)
+    if(old_qnt<qnt):
+       raise ValueError("Value bigger than quantity in stock!")
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('epl343.db')
     cursor = connection.cursor()
-    old_qnt = get_quantity(entry_id)
-    if(old_qnt[0]<qnt):
-        raise ValueError("Value bigger than quantity in stock!")
     decQnt = "UPDATE ENTRY SET QNT = (?) WHERE ENTRY_ID = (?)"
-    cursor.execute(decQnt, ((int(old_qnt[0])-qnt), entry_id))
+    cursor.execute(decQnt, ((old_qnt-qnt), entry_id))
     connection.commit()
     connection.close()
     add_log_ent(entry_id, -(qnt))
 
-def get_quantity(entry_id):
+def get_quantity(entry_id): 
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('epl343.db')
     cursor = connection.cursor()
@@ -281,7 +286,7 @@ def get_quantity(entry_id):
     cursor.execute(getQnt, (entry_id,))
     qnt = cursor.fetchall()
     connection.close()
-    return qnt
+    return qnt[0][0]
 
 def add_log_ent(entry_id, qnt_dif):
     # > connect if db exist - create if database doesn't.
@@ -291,11 +296,11 @@ def add_log_ent(entry_id, qnt_dif):
     cursor.execute(getUid, (entry_id,))
     uid = cursor.fetchall()
     updateLog = """INSERT INTO LOG (UID, ENTRY_ID, QNT_DIF, DATE_TIME) VALUES (?, ?, ?, datetime('now', 'localtime'))"""
-    cursor.execute(updateLog, (uid[0], qnt_dif, entry_id))
+    cursor.execute(updateLog, (uid[0][0], qnt_dif, entry_id))
     connection.commit()
     connection.close()
 
-def drop_all():
+def drop_all(): 
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('epl343.db')
     cursor = connection.cursor()
@@ -313,3 +318,44 @@ def drop_all():
     cursor.execute(dropUser)
     connection.commit()
     connection.close()
+
+def get_entry_id(uid, name, size, supplier): 
+    # > connect if db exist - create if database doesn't.
+    connection = sqlite3.connect('epl343.db')
+    # > create cursor to access the db.
+    cursor = connection.cursor()
+    getUid = """SELECT ENTRY_ID FROM ENTRY WHERE NAME = (?) AND UID = (?) AND SIZE = (?) AND SUPPLIER = (?)"""
+    cursor.execute(getUid, (name, uid, size, supplier))
+    uid = cursor.fetchall()
+    connection.close()
+    return uid[0][0]
+
+
+#set_user('user_1', 'password1')
+#set_user('user_2', 'paSSWORD2')
+#uid1 = get_user_uid('user_1')
+#uid2 = get_user_uid('user_2')
+#create_entry('poto', 1000, 'vodka', 'maria', 10, '', 100, uid1)
+#create_entry('poto', 1000, 'vodka', 'giorkos', 10, '', 100, uid2)
+#create_entry('poto', 500, 'vodka', 'marios', 10, '', 100, uid1)
+#create_entry('poto', 500, 'vodka', 'giorkos', 10, '', 100, uid1)
+#create_entry('allo_poto', 1000, 'gin', 'giorkos', 10, '', 100, uid1)
+#add_transaction(uid1, uid2, 1, 10)
+#add_transaction(uid2, uid1, 3, 20)
+#print(transaction_exists(1))
+#answer_transaction(1, True)
+#print(transaction_exists(1))
+#print(generate_report(uid1))
+#print(get_inventory_data(uid1))
+#print('\n')
+#update_entry(1, 'poto', 1000, 'vodka', 'maria', 10, '', 0, 'F')
+#print(get_inventory_data(uid1))
+#print('\n')
+#print(get_filtered_inventory(uid1, '', '', 'zero'))
+#print('\n')
+#print(get_filtered_inventory(uid1, 'gin', '', ''))
+#print('\n')
+#print(get_pending_transactions(uid1))
+#print('\n')
+#print(get_pending_transactions(uid2))
+#print('\n')
