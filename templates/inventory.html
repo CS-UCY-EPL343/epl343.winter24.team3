@@ -63,6 +63,59 @@
         
         <!-- Main Content -->
         <div class="inventory-container">
+            <div class="search-filter-container">
+                <!-- Search Bar -->
+                <input type="text" id="searchBar" placeholder="Search a product..." onkeyup="performSearch()">
+            
+                <!-- Filter Button -->
+                <button class="filter-btn" id="filterButton" onclick="openFilterModal()">Filters</button>
+            </div>
+            
+            <!-- Filter Modal -->
+            <div id="filterModal" class="filter-modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeFilterModal()">&times;</span>
+                    <form method="POST" action="{{ url_for('viewInventory') }}">
+                        <!-- Category Filter -->
+                        <div>
+                            <label for="filterCategory">Category:</label>
+                            <select name="filterCategory" id="filterCategory">
+                                <option value="">All</option>
+                                {% for category in category_options %}
+                                    <option value="{{ category }}">{{ category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+            
+                        <!-- Supplier Filter -->
+                        <div>
+                            <label for="filterSupplier">Supplier:</label>
+                            <select name="filterSupplier" id="filterSupplier">
+                                <option value="">All</option>
+                                {% for supplier in supplier_options %}
+                                    <option value="{{ supplier }}">{{ supplier }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+            
+                        <!-- Quantity Filter -->
+                        <div>
+                            <label for="filterQuantity">Quantity:</label>
+                            <select name="filterQuantity" id="filterQuantity">
+                                <option value="">All</option>
+                                <option value="unavailable">Unavailable</option>
+                                <option value="zero">Zero</option>
+                                <option value="below_minimum">Below Minimum</option>
+                                <option value="close_to_minimum">Close to Minimum</option>
+                                <option value="many">Many</option>
+                            </select>
+                        </div>
+            
+                        <button type="submit">Apply Filters</button>
+                    </form>
+                </div>
+            </div>
+
             <!-- {% extends "base.html" %}
 
             {% block content %} -->
@@ -105,17 +158,16 @@
                         <div class="entry-details">
                             <span class="entry-info">
                                 <span class="entry-text">
-                                    <strong>ABSOLUTE VODKA</strong> 750ML | SUPPLIER: LIQUOR INC. | MIN REQUIREMENT: 5
+                                    <strong class="entry-name">ABSOLUT VODKA</strong> 750ML | SUPPLIER: LIQUOR INC. | MIN: 5
                                 </span>
                                 <span class="entry-quantity">
-                                    Quantity:
                                     <button class="quantity-btn" onclick="changeQuantity(this, -1)">-</button>
                                     <span class="quantity-value">10</span>
                                     <button class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
                                 </span>
                             </span>
                         </div>
-                        <img src="edit-icon.png" alt="EDIT" class="edit-button" onclick="openEditSidebar()">
+                        <img src="https://www.svgrepo.com/show/304506/edit-pen.svg" alt="EDIT" class="edit-button" onclick="openEditSidebar()">
                     </div>
                 </div>
             </section>

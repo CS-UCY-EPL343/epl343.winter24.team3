@@ -42,28 +42,3 @@
     <button type="submit">Apply Filters</button>
 </form>
 
-<!-- Display filtered inventory items -->
-{% if inventory_data %}
-    <table>
-        <thead>
-            <tr>
-                <th>Item Name</th>
-                <th>Category</th>
-                <th>Supplier</th>
-                <th>Quantity</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in inventory_data %}
-                <tr>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.category }}</td>
-                    <td>{{ item.supplier }}</td>
-                    <td>{{ item.quantity }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <p>No items found with the selected filters.</p>
-{% endif %}
