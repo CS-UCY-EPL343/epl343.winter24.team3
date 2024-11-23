@@ -52,3 +52,11 @@ function changeQuantity(button, change) {
     currentQuantity = Math.max(0, currentQuantity + change); // Prevent negative values
     quantitySpan.textContent = currentQuantity;
 }
+
+function openFilterModal() {
+    document.getElementById('filterModal').style.display = 'block';
+}
+
+function closeFilterModal() {
+    document.getElementById('filterModal').style.display = 'none';
+}
