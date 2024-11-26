@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Trackventory - Bulk Removal</title>
+        <link rel="stylesheet" href="..\static\css\styleKyp.css"> <!-- Link to updated CSS -->
+    </head>
+    <body>
+        <!-- Top Bar -->
+        <div class="top-bar" id="topBar" name="topBar">
+            <img class="logo" src="..\static\images\logo.jpg" alt="Logo" onclick="toggleSidebar()" />
+            <div class="title">Trackventory</div>
+            <div class="user-actions">
+                <div class="user-dropdown">
+                    <a class="switch" href="#" onclick="toggleUserDropdown(event)">SWITCH USER</a>
+                    <div class="udropdown">
+                        <a href="#">| ekrigk01</a>
+                        <a href="#">| souvenirhnw</a>
+                        <a href="#">| taratsahnw</a>
+                        <a href="#">| highnwet</a>
+                        <a class="add-user" href="#">+ ADD USER</a>
+                    </div>
+                </div>        
+                <a href="/logout" class="logout">LOG OUT</a>
+            </div>
+        </div>
+    
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar" name="sidebar">
+            <div class="sidebar-dropdown">
+                <a href="/inventory" onclick="toggleDropdown(event)">INVENTORY</a>
+                <div class="dropdown">
+                    <a href="#">| GIN</a>
+                    <a href="#">| VODKA</a>
+                    <a href="#">| TEQUILA</a>
+                    <a href="#">| WINE</a>
+                    <a href="#">| BEERS</a>
+                </div>
+            </div>
+            <div class="sidebar-dropdown">
+                <a href="/transactions" onclick="toggleDropdown(event)">TRANSACTIONS</a>
+                <div class="dropdown">
+                    <a href="#">| INCOMING REQUESTS</a>
+                    <a href="#">| OUTGOING REQUESTS</a>
+                </div>
+            </div>
+            <a href="/bulkIncrease">BULK ADDITION</a>
+            <a href="/bulkDecrease" class="active">BULK REMOVAL</a>
+            <a href="/report">REPORT</a>
+        </div>
+    
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Search Bar at the top-left corner -->
+            <div class="search-bar-container">
+                <input type="text" id="searchBar" placeholder="Search for a drink..." onkeyup="performSearch()" />
+            </div>
+    
+            <!-- Selected Drinks List -->
+            <!-- Selected Drinks List -->
+<div id="selectedDrinksList" class="selected-drinks">
+    <h3>Selected Drinks for Removal</h3>
+
+    <!-- Example Drink -->
+    <div class="drink-item" id="absolutVodkaItem">
+        <img src="https://st2.depositphotos.com/2121815/7659/i/950/depositphotos_76594485-stock-photo-absolut-vodka-isolated-on-white.jpg" 
+             alt="Absolut Vodka Bottle" 
+             class="entry-image">
+        <div class="drink-info">
+            <strong class="entry-name">ABSOLUT VODKA</strong>
+            <span class="entry-details">750ML | SUPPLIER: LIQUOR INC.</span>
+        </div>
+        <div class="drink-actions">
+            <input type="number" value="0" class="drink-quantity" />
+            <button onclick="removeDrink('absolutVodkaItem')">Remove</button>
+        </div>
+    </div>
+</div>
+
+    
+            <!-- Submit Button -->
+            <div class="submit-container">
+                <button id="submitDecrement" onclick="submitDecrement()">Submit</button>
+            </div>
+        </div>
+    
+        <!-- Link to JavaScript File -->
+        <script src="..\static\js\scriptsKyp.js"></script> <!-- Link to updated JS -->
+    </body>
+    
