@@ -23,11 +23,28 @@
                         <a href="#">| souvenirhnw</a>
                         <a href="#">| taratsahnw</a>
                         <a href="#">| highnwet</a>
-                        <a class = "add-user"href="#">+ ADD USER</a>
-                        
+                        <a class="add-user" href="#" onclick="openModal()">+ ADD USER</a>
                     </div>
                 </div>        
                 <a href="/logout" class="logout">LOG OUT</a>
+            </div>
+        </div>
+
+        <!-- Add User Modal -->
+        <div class="modal" id="userModal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <form>
+                    <div>
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" placeholder="Enter username">
+                    </div>
+                    <div>
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter password">
+                    </div>
+                    <button type="submit">Submit</button>
+                </form>
             </div>
         </div>
 
@@ -72,7 +89,7 @@
             </div>
             
             <!-- Filter Modal -->
-            <div id="filterModal" class="filter-modal">
+            <div id="filterModal" class="modal">
                 <div class="modal-content">
                     <span class="close" onclick="closeFilterModal()">&times;</span>
                     <form method="POST" action="{{ url_for('viewInventory') }}">
@@ -172,8 +189,6 @@
                 </div>
             </section>
             
-            
-
             <section id="tequila" class="inventory-section">
                 <h2>TEQUILA</h2>
                 <p>Details about Tequila inventory...</p>
@@ -188,7 +203,35 @@
                 <h2>BEERS</h2>
                 <p>Details about Beer inventory...</p>
             </section>
-            
+
+            <!-- Edit Modal -->
+            <div id="editModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeEditSidebar()">&times;</span>
+                    <h2 style="text-align: center; color: #4a007e;">Edit Product</h2>
+                    <form id="editForm">
+                        <div>
+                            <label for="editName">Name:</label>
+                            <input type="text" id="editName" value="ABSOLUT VODKA">
+                        </div>
+                        <div>
+                            <label for="editSize">Size:</label>
+                            <input type="text" id="editSize" value="750ML">
+                        </div>
+                        <div>
+                            <label for="editSupplier">Supplier:</label>
+                            <input type="text" id="editSupplier" value="LIQUOR INC.">
+                        </div>
+                        <div>
+                            <label for="editMin">Minimum Requirement:</label>
+                            <input type="number" id="editMin" value="5">
+                        </div>
+                        <button type="button" onclick="saveEdit()">Save</button>
+                    </form>
+                </div>
+            </div>
+
+
             <!-- {% endblock %} -->
         </div>
 

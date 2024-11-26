@@ -60,3 +60,53 @@ function openFilterModal() {
 function closeFilterModal() {
     document.getElementById('filterModal').style.display = 'none';
 }
+
+// Open the modal
+function openModal() {
+    document.getElementById("userModal").style.display = "block";
+}
+
+// Close the modal
+function closeModal() {
+    document.getElementById("userModal").style.display = "none";
+}
+
+window.onclick = function (event) {
+    // Close User Modal if clicked outside
+    const userModal = document.getElementById("userModal");
+    if (event.target === userModal) {
+        userModal.style.display = "none";
+    }
+
+    // Close Filter Modal if clicked outside
+    const filterModal = document.getElementById("filterModal");
+    if (event.target === filterModal) {
+        filterModal.style.display = "none";
+    }
+};
+
+function openEditSidebar() {
+    const editModal = document.getElementById("editModal");
+    editModal.style.display = "block";
+}
+
+function closeEditSidebar() {
+    const editModal = document.getElementById("editModal");
+    editModal.style.display = "none";
+}
+
+function saveEdit() {
+    const newName = document.getElementById("editName").value;
+    const newSize = document.getElementById("editSize").value;
+    const newSupplier = document.getElementById("editSupplier").value;
+    const newMin = document.getElementById("editMin").value;
+
+    // Update the entry in the main inventory
+    const entryDetails = document.querySelector(".entry-name").closest(".inventory-entry");
+    entryDetails.querySelector(".entry-text").innerHTML = `
+        <strong class="entry-name">${newName}</strong> ${newSize} | SUPPLIER: ${newSupplier} | MIN: ${newMin}
+    `;
+
+    // Close the modal
+    closeEditSidebar();
+}
