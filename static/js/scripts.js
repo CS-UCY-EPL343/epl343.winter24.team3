@@ -214,3 +214,4 @@ function saveNewEntry() {
     // Close the modal
     closeAddEntryModal();
 }
+

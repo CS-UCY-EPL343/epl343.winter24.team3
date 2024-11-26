@@ -3,8 +3,8 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Trackventory - Weekly Report</title>
-        <link rel="stylesheet" href="..\static\css\styleKyp.css"> <!-- Link to CSS -->
+        <title>Trackventory</title>
+        <link rel="stylesheet" href="..\static\css\styles.css">
     </head>
     <body>
         <!-- Top Bar -->
@@ -13,16 +13,38 @@
             <div class="title">Trackventory</div>
             <div class="user-actions">
                 <div class="user-dropdown">
-                    <a class="switch" href="#" onclick="toggleUserDropdown(event)">SWITCH USER</a>
+                    <a class= "switch" href="#" onclick="toggleUserDropdown(event)">SWITCH USER</a>
                     <div class="udropdown">
+                        <!-- {% for user in quick_switch_users %}
+                            <a>{{user}}</a>
+                        {% endfor %} -->
+                        <!-- post request / -->
                         <a href="#">| ekrigk01</a>
                         <a href="#">| souvenirhnw</a>
                         <a href="#">| taratsahnw</a>
                         <a href="#">| highnwet</a>
-                        <a class="add-user" href="#">+ ADD USER</a>
+                        <a class="add-user" href="#" onclick="openModal('userModal')">+ ADD USER</a>
                     </div>
                 </div>        
                 <a href="/logout" class="logout">LOG OUT</a>
+            </div>
+        </div>
+
+        <!-- Add User Modal -->
+        <div class="modal" id="userModal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('userModal')">&times;</span>
+                <form>
+                    <div>
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" placeholder="Enter username">
+                    </div>
+                    <div>
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter password">
+                    </div>
+                    <button type="submit">SUBMIT</button>
+                </form>
             </div>
         </div>
 
@@ -31,6 +53,9 @@
             <div class="sidebar-dropdown">
                 <a href="/inventory" onclick="toggleDropdown(event)">INVENTORY</a>
                 <div class="dropdown">
+                    <!-- {% for category in categories %}
+                        <a>{{category}}</a>
+                    {% end for %} -->
                     <a href="#">| GIN</a>
                     <a href="#">| VODKA</a>
                     <a href="#">| TEQUILA</a>
@@ -41,50 +66,52 @@
             <div class="sidebar-dropdown">
                 <a href="/transactions" onclick="toggleDropdown(event)">TRANSACTIONS</a>
                 <div class="dropdown">
+                    <!-- {% for reqs in requests %}
+                        <a>{{reqs}}</a>
+                    {% endfor %} -->
                     <a href="#">| INCOMING REQUESTS</a>
                     <a href="#">| OUTGOING REQUESTS</a>
                 </div>
             </div>
             <a href="/bulkIncrease">BULK ADDITION</a>
             <a href="/bulkDecrease">BULK REMOVAL</a>
-            <a href="/report" class="active">REPORT</a>
+            <a href="/report">REPORT</a>
         </div>
-
-        <!-- Main Content -->
-        <div class="content">
-            <h2 class="report-title">Weekly Sales Report</h2>
-
         
-            <!-- Report Table -->
-<div class="report-container">
-    <table class="report-table">
-        <thead>
-            <tr>
-                <th>Logo</th>
-                <th>Drink Name</th>
-                <th>Bottle Size</th>
-                <th>Supplier</th>
-                <th>Stock Difference</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Example Row -->
-            <tr>
-                <td><img src="https://st2.depositphotos.com/2121815/7659/i/950/depositphotos_76594485-stock-photo-absolut-vodka-isolated-on-white.jpg" alt="Vodka" class="report-logo" /></td>
-                <td>ABSOLUT VODKA</td>
-                <td>750ML</td>
-                <td>LIQUOR INC.</td>
-                <td>-10</td>
-            </tr>
-            <!-- More rows can be dynamically added via JS -->
-        </tbody>
-    </table>
-</div>
-
+        <!-- Main Content -->
+        <div class="report-container">
+            <h2 class="report-title">WEEKLY SALES REPORT</h2>
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>IMAGE</th>
+                        <th>Drink Name</th>
+                        <th>Bottle Size</th>
+                        <th>Supplier</th>
+                        <th>Stock Difference</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Example Row -->
+                    <tr>
+                        <td><img src="https://st2.depositphotos.com/2121815/7659/i/950/depositphotos_76594485-stock-photo-absolut-vodka-isolated-on-white.jpg" alt="Vodka" class="report-logo" /></td>
+                        <td>ABSOLUT VODKA</td>
+                        <td>750ML</td>
+                        <td>LIQUOR INC.</td>
+                        <td>-10</td>
+                    </tr>
+                    <tr>
+                        <td><img src="https://whiskyonlinecy.com/wp-content/uploads/2022/09/Hendricks-Neptunia-Gin-70cl-43.4.jpg" alt="Gin" class="report-logo" /></td>
+                        <td>HENDRICK'S GIN</td>
+                        <td>750ML</td>
+                        <td>LIQUOR INC.</td>
+                        <td>-15</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
         <!-- Link to JavaScript File -->
-        <script src="..\static\js\scriptsKyp.js"></script> <!-- Link to updated JS -->
+        <script src="..\static\js\scripts.js"></script>
     </body>
 </html>
-
