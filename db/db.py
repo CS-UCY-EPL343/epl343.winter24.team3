@@ -14,7 +14,7 @@ def search_inventory(uid, query):
     connection.close()
     return rows    
 
-# Should return a list of the usernames. # TO
+# Should return a list of the usernames. # TO # DONE
 def get_quick_switch_users(uid: int) -> list[str]:
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('./db/epl343.db')
@@ -24,7 +24,8 @@ def get_quick_switch_users(uid: int) -> list[str]:
     cursor.execute(qsUsers, (uid,))
     rows = cursor.fetchall()
     connection.close()
-    return rows
+    users = [{"username" : elem[0]} for elem in rows]
+    return users
 
 def get_user_uid(new_username): 
     # > connect if db exist - create if database doesn't.
@@ -38,7 +39,7 @@ def get_user_uid(new_username):
     try:
         return uid[0][0]
     except IndexError:
-        raise Exception(f"Could not find user with username {new_username}") # TO
+        raise Exception(f"Could not find user with username {new_username}") # TO #ASK
 
 def validate_user(new_username: str, password: str) -> bool:
     # > connect if db exist - create if database doesn't.
@@ -102,7 +103,7 @@ def set_user(username: str, password: str) -> bool:
     except:
         return False
 
-# Should return a dictionary with keys the column_names.lower() and values the results of the query  # TO
+# Should return a dictionary with keys the column_names.lower() and values the results of the query  # TO #DONE
 def get_inventory_data(uid):
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('./db/epl343.db')
@@ -112,9 +113,10 @@ def get_inventory_data(uid):
     cursor.execute(getInv, (uid,))
     rows = cursor.fetchall()
     connection.close()
-    return rows
+    inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "avg_per_week" : elem[7], "entry_id" : elem[8], "uid" : elem[9], "unavailable" : elem[10]} for elem in rows]
+    return inventory
 
-# Should return a list of the category names. # TO
+# Should return a list of the category names. # TO #DONE
 def get_category_options(uid: int) -> list[str]: 
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('./db/epl343.db')
@@ -124,9 +126,10 @@ def get_category_options(uid: int) -> list[str]:
     cursor.execute(getCat, (uid,))
     rows = cursor.fetchall()
     connection.close()
-    return rows
+    categories = [{"category" : elem[0]} for elem in rows]
+    return categories
 
-# Should return a list of the category names. # TO
+# Should return a list of the supplier names. # TO #DONE
 def get_supplier_options(uid: int) -> list[str]: 
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('./db/epl343.db')
@@ -136,7 +139,8 @@ def get_supplier_options(uid: int) -> list[str]:
     cursor.execute(getSup, (uid,))
     rows = cursor.fetchall()
     connection.close()
-    return rows
+    suppliers = [{"supplier" : elem[0]} for elem in rows]
+    return suppliers
 
 def update_entry(entry_id, name, size, category, supplier, minreq, photo, qnt, unav): 
     # > connect if db exist - create if database doesn't.
@@ -162,7 +166,7 @@ def create_entry(name, size, category, supplier, minreq, photo, qnt, uid):
     except:
         return
 
-# Same as get_inventroy_data.  # TO
+# Same as get_inventory_data.  # TO # DONE
 def get_filtered_inventory(uid: int, category: str, supplier: str, qnt_filter: str) -> list[str]: 
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('./db/epl343.db')
@@ -204,7 +208,8 @@ def get_filtered_inventory(uid: int, category: str, supplier: str, qnt_filter: s
     qntFilter = cursor.fetchall()
 
     finalFilter = [x for x in catFilter if x in supFilter and x in qntFilter]
-    return finalFilter
+    inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "avg_per_week" : elem[7], "entry_id" : elem[8], "uid" : elem[9], "unavailable" : elem[10]} for elem in finalFilter]
+    return inventory
 
 def generate_report(uid): 
     # > connect if db exist - create if database doesn't.
@@ -263,7 +268,7 @@ def answer_transaction(trans_id, answer):
         try:
             uidReq, uidAns, entry_id_req, qnt = values[0]
         except IndexError:
-            return
+            return #ASK why not None like others (also ln 278)
         getAnsEid = """SELECT A.ENTRY_ID FROM ENTRY A, ENTRY R WHERE R.ENTRY_ID = (?) AND A.UID = (?) AND A.NAME = R.NAME AND A.SIZE = R.SIZE"""
         cursor.execute(getAnsEid, (entry_id_req, uidAns))
         values = cursor.fetchall()
@@ -317,7 +322,7 @@ def get_quantity(entry_id):
         connection.close()
         return qnt[0][0]
     except IndexError:
-        print("🐍 File: db/db.py | Line: 301 | get_quantity ~ entry_id:", entry_id)
+        print("🐍 File: db/db.py | Line: 301 | get_quantity ~ entry_id:", entry_id) #ASK needed?
         raise IndexError
 
 def add_log_ent(entry_id, qnt_dif):
@@ -382,7 +387,9 @@ if __name__ == "__main__":
     create_entry('poto', 500, 'vodka', 'marios', 10, '', 100, uid1)
     create_entry('poto', 500, 'vodka', 'giorkos', 10, '', 100, uid1)
     create_entry('allo_poto', 1000, 'gin', 'giorkos', 10, '', 100, uid1)
-    add_transaction(uid1, uid2, 1, 10)
+    print(get_inventory_data(uid1))
+    print('\n')
+    """add_transaction(uid1, uid2, 1, 10)
     add_transaction(uid2, uid1, 3, 20)
     print(transaction_exists(1))
     answer_transaction(1, True)
@@ -391,8 +398,6 @@ if __name__ == "__main__":
     print(get_inventory_data(uid1))
     print('\n')
     update_entry(1, 'poto', 1000, 'vodka', 'maria', 10, '', 0, 'F')
-    print(get_inventory_data(uid1))
-    print('\n')
     print(get_filtered_inventory(uid1, '', '', 'zero'))
     print('\n')
     print(get_filtered_inventory(uid1, 'gin', '', ''))
@@ -400,4 +405,8 @@ if __name__ == "__main__":
     print(get_pending_transactions(uid1))
     print('\n')
     print(get_pending_transactions(uid2))
-    print('\n')
+    print('\n')"""
+
+    #ASK avg_per_week calculated in weekly report?
+    #ASK order in which inventory data is presented on me or front end?
+    #ASK generate_report also needs list[dict]?
