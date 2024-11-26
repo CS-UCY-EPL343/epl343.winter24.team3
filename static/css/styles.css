@@ -165,7 +165,17 @@ html, body {
     transition: margin-left 0.6s ease;
 }
 
+.bulk-container {
+    padding: 20px;
+    margin-top: 80px;
+    transition: margin-left 0.6s ease;
+}
+
 .sidebar:not(.close) + .inventory-container {
+    margin-left: 250px; /* Sidebar width */
+}
+
+.sidebar:not(.close) + .bulk-container {
     margin-left: 250px; /* Sidebar width */
 }
 
@@ -243,7 +253,7 @@ html, body {
     cursor: pointer;
 }
 
-.quantity-btn:hover {
+.quantity-btn:hover{
     background-color: #9d4edd;
 }
 
@@ -266,7 +276,7 @@ html, body {
     font-weight: bold;
 }
 
-.filter-btn {
+.filter-btn, .submit-btn, .add-entry-btn {
     background-color: #7c28c1; 
     border: 1px solid #ce9eff; 
     border-radius: 6px;
@@ -279,10 +289,14 @@ html, body {
     width: 140px; 
 }
 
-.filter-btn:hover {
+.filter-btn:hover, .submit-btn:hover, .add-entry-btn:hover {
     background-color: #5a189a; 
     border: 1px solid #ce9eff; 
     border-radius: 6px; 
+}
+
+.add-entry-btn{
+    width: max-content;
 }
 
 .modal {
@@ -388,7 +402,7 @@ html, body {
 #searchBar {
     width: 400px; 
     padding: 12px;
-    border: 1px solid #ce9eff; 
+    border: 1px solid #7c28c1;
     border-radius: 6px;
     font-size: 16px;
     color: #4a007e; 
@@ -399,12 +413,12 @@ html, body {
 }
 
 #searchBar:focus {
-    border-color: #7c28c1; 
-    box-shadow: 0 0 6px #ce9eff; 
+    border-color: #3e0c70; 
+    box-shadow: 0 0 6px #4a007e; 
     outline: none; 
 }
 
-.search-filter-container {
+.search-filter-container, .search-bar-container {
     justify-content: center;
     align-items: center;
     gap: 30px; 
@@ -412,9 +426,36 @@ html, body {
     margin-bottom: 20px; 
 }
 
+.drink-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px; 
+    white-space: nowrap;
+    margin-right: 30px;
+}
 
+.drink-quantity {
+    width: 50px;
+    padding: 3px;
+    border-radius: 4px;
+    border: 1px solid #9d4edd;
+    text-align: center;
+    font-size: 15px;
+}
 
+.drink-actions button {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+}
 
+.submit-btn {
+    display: block;
+    margin: 20px auto; 
+}
 
-
-
+.add-new-btn {
+    position: relative; 
+    z-index: 999;
+     display: block;
+}

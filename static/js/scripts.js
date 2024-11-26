@@ -33,8 +33,6 @@ function toggleUserDropdown(event) {
     parent.classList.toggle('open');
 }
 
-
-
 document.querySelectorAll('.dropdown a').forEach(link => {
     link.addEventListener('click', (event) => {
         event.preventDefault();
@@ -46,6 +44,65 @@ document.querySelectorAll('.dropdown a').forEach(link => {
     });
 });
 
+function performSearch() {
+    const query = $('#searchBar').val().trim(); // Get the search query
+
+    if (query.length === 0) {
+        $('#searchDropdown').hide(); // Hide dropdown if query is empty
+        return;
+    }
+
+    $.ajax({
+        url: '/search',
+        method: 'GET',
+        data: { query: query },
+        success: function(data) {
+            const dropdown = $('#searchDropdown');
+            dropdown.empty(); // Clear previous results
+            if (data.length === 0) {
+                dropdown.append('<div>No matching items found.</div>');
+            } else {
+                data.forEach(item => {
+                    dropdown.append(`
+                        <div onclick="selectItem('${item.uid}', '${item.name}', '${item.size}', '${item.quantity}')">
+                            ${item.name} (UID: ${item.uid})
+                        </div>
+                    `);
+                });
+            }
+            dropdown.show(); // Show dropdown
+        },
+        error: function() {
+            alert('An error occurred while searching. Please try again.');
+        }
+    });
+}
+
+function selectItem(uid, name, size, quantity) {
+    // Hide the dropdown
+    $('#searchDropdown').hide();
+
+    // Populate the inventory table with the selected item
+    $('#inventoryBody').html(`
+        <tr>
+            <td>${uid}</td>
+            <td>${name}</td>
+            <td>${size}</td>
+            <td>${quantity}</td>
+        </tr>
+    `);
+
+    // Optionally, clear the search bar
+    $('#searchBar').val('');
+}
+
+// Hide dropdown if clicked outside
+$(document).click(function(e) {
+    if (!$(e.target).closest('#searchBar, #searchDropdown').length) {
+        $('#searchDropdown').hide();
+    }
+});
+
 function changeQuantity(button, change) {
     const quantitySpan = button.parentElement.querySelector('.quantity-value');
     let currentQuantity = parseInt(quantitySpan.textContent, 10);
@@ -53,47 +110,29 @@ function changeQuantity(button, change) {
     quantitySpan.textContent = currentQuantity;
 }
 
-function openFilterModal() {
-    document.getElementById('filterModal').style.display = 'block';
-}
-
-function closeFilterModal() {
-    document.getElementById('filterModal').style.display = 'none';
-}
 
 // Open the modal
-function openModal() {
-    document.getElementById("userModal").style.display = "block";
+function openModal(entryId) {
+    document.getElementById(entryId).style.display = "block";
 }
 
 // Close the modal
-function closeModal() {
-    document.getElementById("userModal").style.display = "none";
+function closeModal(entryId) {
+    document.getElementById(entryId).style.display = "none";
 }
 
+// NOT WORKING FRO SOME REASONDSDEIFHE
 window.onclick = function (event) {
-    // Close User Modal if clicked outside
-    const userModal = document.getElementById("userModal");
-    if (event.target === userModal) {
-        userModal.style.display = "none";
-    }
+    // List of modal IDs
+    const modalIds = ["userModal", "filterModal", "editModal", "addEntryModal"];
 
-    // Close Filter Modal if clicked outside
-    const filterModal = document.getElementById("filterModal");
-    if (event.target === filterModal) {
-        filterModal.style.display = "none";
-    }
+    modalIds.forEach(id => {
+        const modal = document.getElementById(id);
+        if (modal && event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
 };
-
-function openEditSidebar() {
-    const editModal = document.getElementById("editModal");
-    editModal.style.display = "block";
-}
-
-function closeEditSidebar() {
-    const editModal = document.getElementById("editModal");
-    editModal.style.display = "none";
-}
 
 function saveEdit() {
     const newName = document.getElementById("editName").value;
@@ -109,4 +148,69 @@ function saveEdit() {
 
     // Close the modal
     closeEditSidebar();
+}
+
+// Remove a specific drink entry
+function removeDrink(entryId) {
+    // Find the specific entry by its ID and remove it from the DOM
+    const entry = document.getElementById(entryId);
+    if (entry) {
+        entry.remove();
+    }
+}
+
+// Remove all entries when submit is clicked
+function submitDecrement() {
+    // Get all the entries inside the 'entry-list' container
+    const entries = document.querySelectorAll('.inventory-entry');
+
+    // Remove each entry
+    entries.forEach(entry => {
+        entry.remove();
+    });
+}
+
+function submitIncrement() {
+    // Get all the entries inside the 'entry-list' container
+    const entries = document.querySelectorAll('.inventory-entry');
+
+    // Remove each entry
+    entries.forEach(entry => {
+        entry.remove();
+    });
+}
+
+function saveNewEntry() {
+    const newName = document.getElementById("addName").value;
+    const newSize = document.getElementById("addSize").value;
+    const newSupplier = document.getElementById("addSupplier").value;
+    const newMin = document.getElementById("addMin").value;
+    const newCategory = document.getElementById("addCategory").value;
+    const newPicture = document.getElementById("addPicture").value;
+
+    const newEntry = document.createElement('div');
+    newEntry.classList.add('inventory-entry');
+
+    newEntry.innerHTML = `
+        <img src="${newPicture}" alt="${newName}" class="entry-image">
+        <div class="entry-details">
+            <span class="entry-info">
+                <span class="entry-text">
+                    <strong class="entry-name">${newName}</strong> ${newSize} | SUPPLIER: ${newSupplier} | MIN: ${newMin} | CATEGORY: ${newCategory}
+                </span>
+                <span class="entry-quantity">
+                    <button class="quantity-btn" onclick="changeQuantity(this, -1)">-</button>
+                    <span class="quantity-value">0</span>
+                    <button class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
+                </span>
+            </span>
+        </div>
+        <img src="https://www.svgrepo.com/show/304506/edit-pen.svg" alt="EDIT" class="edit-button" onclick="openEditSidebar()">
+    `;
+
+    // Add the new entry to the inventory
+    document.querySelector(".entry-list").appendChild(newEntry);
+
+    // Close the modal
+    closeAddEntryModal();
 }
