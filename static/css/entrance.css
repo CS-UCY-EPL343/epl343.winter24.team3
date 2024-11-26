@@ -9,11 +9,9 @@ body {
     font-family: Arial, sans-serif;
 }
 
-
 /* Στυλ για το container του login form */
 .login-container {
-
-    background-color:rgba(255, 255, 255, 0.9);/* Background του login form */
+    background-color: rgba(255, 255, 255, 0.9); /* Background του login form */
     width: 350px;
     padding: 20px;
     border-radius: 10px;
@@ -25,7 +23,6 @@ body {
     align-items: center;
 }
 
-
 /* για το λογότυπο */
 .logo {
     display: block;
@@ -34,28 +31,31 @@ body {
     margin-bottom: 20px;
 }
 
-/* τα κουμπιά login και register */
-button[type="submit"] {
-    background-color: #5d5659;
-    color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 5px;
+/* Στυλ για τα κουμπιά login και register */
+button[type="submit"], .register-button {
+    background-color: #7c28c1; /* Bright purple */
+    border: 1px solid #ce9eff; /* Light lavender border */
+    border-radius: 6px;
+    padding: 10px 15px;
+    font-size: 18px;
+    color: #e9d5ff;
     cursor: pointer;
-    width: 100%;
-    font-size: 16px; /* Μεγέθυνση κειμένου */
-    margin-top: 10px; /* Κενό ανάμεσα στο μήνυμα και το κουμπί */
-    transition: backround-colour 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    text-transform: uppercase;
+    width: 90%; /* Το κουμπί παίρνει το 100% του πλάτους του container */
+    margin-top: 10px; /* Απόσταση μεταξύ των κουμπιών */
 }
 
-button[type="submit"]:hover {
-    background-color: #271644;
+/* Hover effect για τα κουμπιά */
+button[type="submit"]:hover, .register-button:hover {
+    background-color: #5a189a; 
+    border: 1px solid #ce9eff; 
+    border-radius: 6px; 
 }
 
 /*  πεδία εισαγωγής */
-input[type="text"], input[type="password"]{
-    width: 90%;
-    max-width: 250px;
+input[type="text"], input[type="password"] {
+    width: 90%; /* Τα πεδία εισαγωγής να παίρνουν όλο το πλάτος του container */
     padding: 12px;
     margin-bottom: 15px;
     border: 1px solid #ccc;
@@ -85,6 +85,7 @@ input[type="text"], input[type="password"]{
     font-weight: bold;
 }
 
+/* Στυλ για το "Remember Me" */
 .remember-me {
     margin: 10px 50px; /* Απόσταση πάνω και κάτω */
     display: flex;
