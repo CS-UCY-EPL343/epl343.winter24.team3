@@ -249,7 +249,7 @@ def inventory():
 
             # Name
             item_name: str = request.form.get('item_name')
-            if item_name is None or len(item_name) == 0 or len(item_name) > N:
+            if item_name is None or len(item_name) == 0 or len(item_name) > 30:
                 flash('Invalid item name.', 'error')
                 print('Invalid item name.')
                 return redirect(url_for('inventory'))
@@ -268,14 +268,14 @@ def inventory():
             
             # Category
             item_category: str = request.form.get('item_category')
-            if item_category is None or len(item_category) == 0 or len(item_category) > N:
+            if item_category is None or len(item_category) == 0 or len(item_category) > 20:
                 flash('Invalid category value.', 'error')
                 print('Invalid category value.')
                 return redirect(url_for('inventory'))
             
             # Supplier
             item_supplier: str = request.form.get('item_supplier')
-            if item_supplier is None or len(item_supplier) == 0 or len(item_supplier) > N:
+            if item_supplier is None or len(item_supplier) == 0 or len(item_supplier) > 30:
                 flash('Invalid supplier value.', 'error')
                 print('Invalid supplier value.')
                 return redirect(url_for('inventory'))
@@ -294,7 +294,7 @@ def inventory():
             
             # Photo
             item_photo: str = request.form.get('item_photo')
-            if len(item_photo) > N:
+            if len(item_photo) > 260:
                 flash('Invalid photo value.', 'error')
                 print('Invalid photo value.')
                 return redirect(url_for('inventory'))
