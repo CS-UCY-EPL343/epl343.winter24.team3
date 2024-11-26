@@ -193,6 +193,7 @@ html, body {
     border-radius: 8px;
     background-color: #fff;
     text-transform: uppercase;
+    margin: 10px;
 }
 
 .entry-image {
