@@ -6,19 +6,6 @@ function toggleDropdown(event) {
     const target = event.target;
     const parent = target.closest('.sidebar-dropdown');
 
-    // Check if the clicked link is the INVENTORY link
-    if (target.textContent.trim() === 'INVENTORY') {
-        // Redirect to the inventory page
-        window.location.href = "/inventory";
-        return;
-    }
-
-    if (target.textContent.trim() === 'TRANSACTIONS') {
-        // Redirect to the inventory page
-        window.location.href = "/transactions";
-        return;
-    }
-
     // Otherwise, toggle the dropdown if it exists
     if (parent) {
         event.preventDefault();

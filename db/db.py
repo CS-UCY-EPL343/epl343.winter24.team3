@@ -171,7 +171,7 @@ def get_filtered_inventory(uid: int, category: str, supplier: str, qnt_filter: s
     getAll = """SELECT * FROM ENTRY WHERE UID = (?)"""
     filterCat = """SELECT * FROM ENTRY WHERE UID = (?) AND CATEGORY = (?)"""
     filterSup = """SELECT * FROM ENTRY WHERE UID = (?) AND SUPPLIER = (?)"""
-    filterUnav = """SELECT * FROM ENTRY WHERE UID = (?) AND UNAVAILABLE = 'T"""
+    filterUnav = """SELECT * FROM ENTRY WHERE UID = (?) AND UNAVAILABLE = 'T'"""
     filterZero = """SELECT * FROM ENTRY WHERE UID = (?) AND QNT = 0"""
     filterBelowMin = """SELECT * FROM ENTRY WHERE UID = (?) AND (QNT<MIN_REQUIREMENT)"""
     filterCloseToMin = """SELECT * FROM ENTRY WHERE UID = (?) AND (QNT>MIN_REQUIREMENT) AND (QNT<=MIN_REQUIREMENT+5)"""
@@ -317,7 +317,7 @@ def get_quantity(entry_id):
         connection.close()
         return qnt[0][0]
     except IndexError:
-        print("🐍 File: db/db.py | Line: 301 | get_quantity ~ entry_id:", entry_id)
+        print("🐍 File: db/db.py | Line: 301 | get_quantity ~ entry_id:", entry_id) # TO
         raise IndexError
 
 def add_log_ent(entry_id, qnt_dif):

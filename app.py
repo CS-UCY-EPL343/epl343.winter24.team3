@@ -121,6 +121,7 @@ def login():
         try:
             if not db.validate_user(username, password): # TO
                 flash('Invalid username or password.', 'error')
+                print('Invalid username or password.')
                 return redirect(url_for('login'))
         except Exception as e:
             print(e)
@@ -135,6 +136,7 @@ def login():
             session['UID'] = db.get_user_uid(username)
         except Exception as e:
             print(e)
+            print('problem')
             flash('Error occurred while changing session details.', 'error')
             return redirect(url_for('login'))
         
@@ -144,7 +146,9 @@ def login():
             app.permanent_session_lifetime = timedelta(days= 150)
             session.modified = True
             session.permanent = True
-        # goto index page
+
+        # goto main page
+        print('login successful')
         return redirect(url_for('inventory'))
     
 @app.route('/register', methods=['GET', 'POST'])
@@ -223,9 +227,9 @@ def inventory():
         # Have to send the data to the frond
         try:
             inventory_data: list[dict] = db.get_inventory_data(session.get('UID')) # TO
-            quick_switch_users: list[dict] = db.get_quick_switch_users(session.get('UID')) # TO
-            category_options: list[dict] = db.get_category_options(session.get('UID')) # TO
-            supplier_options: list[dict] = db.get_supplier_options(session.get('UID')) # TO
+            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
+            category_options: list[str] = db.get_category_options(session.get('UID')) # TO
+            supplier_options: list[str] = db.get_supplier_options(session.get('UID')) # TO
         except:
             flash('An error occurred while retrieving data.', 'error')
             print('An error occurred while retrieving data.')
@@ -335,8 +339,8 @@ def inventory():
                 filtered_data = db.get_filtered_inventory(session.get('UID'), category, supplier, quantity_filter) # TO # TO # TO # TO
                 # Fetch options from the DB
                 category_options = db.get_category_options(session.get('UID')) # TO
-                supplier_options = db.get_supplier_options(session.get('UID')) # TO
-                quick_switch_users: list[dict] = db.get_quick_switch_users(session.get('UID')) # TO   
+                supplier_options: list[str] = db.get_supplier_options(session.get('UID')) # TO
+                quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO   
             except Exception as e:
                 print(e)
                 flash('An error occurred while retrieving data.', 'error')
@@ -357,7 +361,7 @@ def report():
 
     if request.method == 'GET':
         try:
-            quick_switch_users: list[dict] = db.get_quick_switch_users(session.get('UID')) # TO
+            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
             report: list[dict] = db.generate_report(session.get('UID')) # TO
         except Exception as e:
             print(e)
@@ -387,7 +391,7 @@ def transactions():
 
     if request.method == 'GET':
         try:
-            quick_switch_users: list[dict] = db.get_quick_switch_users(session.get('UID')) # TO
+            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
             pending_transactions: list[dict] = db.get_pending_transactions(session.get('UID')) # TO
         except Exception as e:
             print(e)
@@ -491,7 +495,7 @@ def bulkIncrease():
 
     if request.method == 'GET':
         try:
-            quick_switch_users: list[dict] = db.get_quick_switch_users(session.get('UID')) # TO
+            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
         except Exception as e:
             print(e)
             flash('An error occurred while retrieving data.', 'error')
@@ -540,7 +544,7 @@ def bulkDecrease():
 
     if request.method == 'GET':
         try:
-            quick_switch_users: list[dict] = db.get_quick_switch_users(session.get('UID')) # TO
+            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
         except Exception as e:
             print(e)
             flash('An error occurred while retrieving data.', 'error')
@@ -595,7 +599,7 @@ def bulkDecrease():
 
 #     if request.method == 'GET':
 #         try:
-#             quick_switch_users: list[dict] = db.get_quick_switch_users(session.get('UID')) # TO
+#             quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
 #         except Exception as e:
 #             print(e)
 #             flash('An error occurred while retrieving data.', 'error')
