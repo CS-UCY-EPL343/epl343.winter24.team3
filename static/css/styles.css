@@ -158,14 +158,21 @@ html, body {
     border-top: 2px solid #ce9eff; 
 }
 
-
-.inventory-container {
+.inventory-container, .bulk-container, .report-container {
     padding: 20px;
     margin-top: 80px;
     transition: margin-left 0.6s ease;
 }
 
 .sidebar:not(.close) + .inventory-container {
+    margin-left: 250px; /* Sidebar width */
+}
+
+.sidebar:not(.close) + .bulk-container {
+    margin-left: 250px; /* Sidebar width */
+}
+
+.sidebar:not(.close) + .report-container {
     margin-left: 250px; /* Sidebar width */
 }
 
@@ -193,6 +200,7 @@ html, body {
     border-radius: 8px;
     background-color: #fff;
     text-transform: uppercase;
+    margin: 10px;
 }
 
 .entry-image {
@@ -242,7 +250,7 @@ html, body {
     cursor: pointer;
 }
 
-.quantity-btn:hover {
+.quantity-btn:hover{
     background-color: #9d4edd;
 }
 
@@ -265,9 +273,9 @@ html, body {
     font-weight: bold;
 }
 
-.filter-btn {
-    background-color: #7c28c1; /* Bright purple */
-    border: 1px solid #ce9eff; /* Light lavender border */
+.filter-btn, .submit-btn, .add-entry-btn {
+    background-color: #7c28c1; 
+    border: 1px solid #ce9eff; 
     border-radius: 6px;
     padding: 10px 15px;
     font-size: 18px;
@@ -275,28 +283,30 @@ html, body {
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.3s ease;
     text-transform: uppercase;
-    width: 300px; /* Same width as the search bar */
-    margin-left: 15px;
+    width: 140px; 
 }
 
-.filter-btn:hover {
+.filter-btn:hover, .submit-btn:hover, .add-entry-btn:hover {
     background-color: #5a189a; 
     border: 1px solid #ce9eff; 
     border-radius: 6px; 
 }
 
-.filter-modal {
+.add-entry-btn{
+    width: max-content;
+}
+
+.modal {
     display: none; /* Hidden by default */
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-    z-index: 1000; /* Above other elements */
+    background-color: rgba(0, 0, 0, 0.5); 
+    z-index: 1000; 
 }
 
-/* Modal Content */
 .modal-content {
     position: absolute;
     top: 50%;
@@ -304,7 +314,7 @@ html, body {
     transform: translate(-50%, -50%);
     width: 90%;
     max-width: 400px;
-    background-color: #f3e9ff; /* Light purple background */
+    background-color: #f3e9ff; 
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -338,6 +348,15 @@ html, body {
     font-weight: bold;
     margin-bottom: 5px;
     color: #4a007e; /* Deep purple */
+}
+
+.modal-content input {
+    width: 95%;
+    padding: 8px;
+    border: 1px solid #cfa2ff;
+    border-radius: 6px;
+    color: #4a007e;
+    background-color: #fff;
 }
 
 .modal-content select {
@@ -378,20 +397,107 @@ html, body {
 }
 
 #searchBar {
-    width: 300px; /* Adjust size as needed */
-    padding: 10px;
-    border: 1px solid #ce9eff; /* Light lavender border */
+    width: 400px; 
+    padding: 12px;
+    border: 1px solid #7c28c1;
     border-radius: 6px;
     font-size: 16px;
-    color: #4a007e; /* Deep purple */
+    color: #4a007e; 
     background-color: #fff;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    margin-right: 15px;
     margin-bottom: 10px;
+    margin-right: 15px;
 }
 
 #searchBar:focus {
-    border-color: #7c28c1; /* Bright purple focus */
-    box-shadow: 0 0 6px #ce9eff; /* Light glow effect */
-    outline: none; /* Remove default outline */
+    border-color: #3e0c70; 
+    box-shadow: 0 0 6px #4a007e; 
+    outline: none; 
+}
+
+.search-filter-container, .search-bar-container {
+    justify-content: center;
+    align-items: center;
+    gap: 30px; 
+    margin-top: 10px; 
+    margin-bottom: 20px; 
+}
+
+.drink-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px; 
+    white-space: nowrap;
+    margin-right: 30px;
+}
+
+.drink-quantity {
+    width: 50px;
+    padding: 3px;
+    border-radius: 4px;
+    border: 1px solid #9d4edd;
+    text-align: center;
+    font-size: 15px;
+}
+
+.drink-actions button {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.submit-btn {
+    display: block;
+    margin: 20px auto; 
+}
+
+.add-new-btn {
+    position: relative; 
+    z-index: 999;
+     display: block;
+}
+
+.report-title {
+    font-size: 28px; 
+    color: #5a189a;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 18px; 
+    color: #6a0dad;
+    background-color: white;
+    border: 2px solid #5a189a;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.report-table {
+    border: 2px solid #5a189a;
+}
+
+.report-table th,
+.report-table td {
+    padding: 10px 15px;
+    text-align: left;
+    height: 80px; /* Ensures all rows have consistent height */
+    border-bottom: 1.5px solid #5a189a; /* Thicker and clearer row divider */
+}
+
+.report-table th {
+    background-color: #5a189a; /* Darker background for headers */
+    font-weight: bold;
+    color: #f3e9ff; /* Light lavender for header text */
+    text-transform: uppercase;
+}
+
+.report-logo {
+    width: 50px; /* Adjusted for smaller sections */
+    height: 50px; /* Explicit height for uniformity */
+    border-radius: 5px; 
+    object-fit: cover; /* Ensures image fits perfectly */
 }
