@@ -1,0 +1,19 @@
+version: '3.7'
+
+services:
+  web:
+    build: ./app
+    tty: true
+    volumes:
+      - ./app/:/usr/src/app/
+    deploy:
+      resources:
+        limits:
+          memory: 1500M
+        reservations:
+          memory: 60M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "30m"
+        max-file: "5"
