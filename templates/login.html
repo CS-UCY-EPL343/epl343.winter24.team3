@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bar Login</title>
+    <title>Trackventory</title>
     <link rel="stylesheet" href="../static/css/entrance.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
 
         <!-- Login Form -->
         <div id="login-form">
-            <form id="login-form-element" action="#" method="post" onsubmit="return validateLogin(event)">
+            <form id="login-form-element" action="#" method="post">
                 <label for="username"></label>
                 <input type="text" id="username" name="username" placeholder="Username:" required>
 
@@ -24,9 +24,6 @@
                     <input type="checkbox" id="remember_me" name="remember_me">
                     <label for="remember_me">Remember Me</label>
                 </div>
-
-                <span id="login-error" class="error-message">UNRECOGNIZED USERNAME OR PASSWORD.</span>
-
                 <!-- Login Button -->
                 <button type="submit">Log In</button>
             </form>
@@ -37,6 +34,5 @@
             </p>
         </div>
     </div>
-
 </body>
 </html>
