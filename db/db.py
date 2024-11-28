@@ -236,9 +236,9 @@ def generate_report(uid):
     connection = sqlite3.connect('./db/epl343.db')
     cursor = connection.cursor()
     report = """
-    SELECT E.*, SUM(L.QNT_DIF) 
-    FROM ENTRY E LEFT OUTER JOIN LOG L ON E.ENTRY_ID = L.ENTRY_ID
-    AND L.UID = (?) AND L.DATE_TIME <= datetime('now', 'localtime') AND L.DATE_TIME >= datetime('now','-7 days', 'localtime')
+    SELECT E.*, SUM(L.QNT_DIF)
+    FROM ENTRY E JOIN LOG L ON E.ENTRY_ID = L.ENTRY_ID
+    AND E.UID = (?) AND L.DATE_TIME <= datetime('now', 'localtime') AND L.DATE_TIME >= datetime('now','-7 days', 'localtime')
     GROUP BY L.ENTRY_ID
     ORDER BY E.ENTRY_ID"""
     cursor.execute(report, (uid,))
@@ -414,33 +414,33 @@ if __name__ == "__main__":
     finally:
         import __init__
 
-    set_user('user_1', 'password1')
-    set_user('user_2', 'paSSWORD2')
-    uid1 = get_user_uid('user_1')
-    uid2 = get_user_uid('user_2')
-    create_entry(uid1, 'poto', 1000, 'vodka', 'maria', 10, '', 100)
-    create_entry(uid2, 'poto', 1000, 'vodka', 'giorkos', 10, '', 100)
-    create_entry(uid1, 'poto', 500, 'vodka', 'marios', 10, '', 100)
-    create_entry(uid1, 'poto', 500, 'vodka', 'giorkos', 10, '', 100)
-    create_entry(uid2, 'allo_poto', 1000, 'gin', 'giorkos', 10, '', 100)
-    add_transaction(uid1, uid2, 1, 10)
-    add_transaction(uid2, uid1, 2, 20)
-    add_transaction(uid1, uid2, 4, 100)
-    for item in get_pending_transactions(uid1):
-        print(item)
-    """print(get_inventory_data(uid1))
-    print('\n')
-    print(generate_report(uid1))
+    # set_user('user_1', 'password1')
+    # set_user('user_2', 'paSSWORD2')
+    # uid1 = get_user_uid('user_1')
+    # uid2 = get_user_uid('user_2')
+    # create_entry(uid1, 'poto', 1000, 'vodka', 'maria', 10, '', 100)
+    # create_entry(uid2, 'poto', 1000, 'vodka', 'giorkos', 10, '', 100)
+    # create_entry(uid1, 'poto', 500, 'vodka', 'marios', 10, '', 100)
+    # create_entry(uid1, 'poto', 500, 'vodka', 'giorkos', 10, '', 100)
+    # create_entry(uid2, 'allo_poto', 1000, 'gin', 'giorkos', 10, '', 100)
+    # add_transaction(uid1, uid2, 1, 10)
+    # add_transaction(uid2, uid1, 2, 20)
+    # add_transaction(uid1, uid2, 4, 100)
+    # for item in get_pending_transactions(uid1):
+    #     print(item)
+    # print(get_inventory_data(uid1))
+    # print('\n')
+    # print(generate_report(uid1))
     
-    print(get_inventory_data(uid1))
-    print('\n')
-    update_entry(1, 'poto', 1000, 'vodka', 'maria', 10, '', 0, 'F')
-    print(get_filtered_inventory(uid1, '', '', 'zero'))
-    print('\n')
-    print(get_filtered_inventory(uid1, 'gin', '', ''))
-    print('\n')
-    print(get_pending_transactions(uid1))
-    print('\n')
-    print(get_pending_transactions(uid2))
-    print('\n')"""
+    # print(get_inventory_data(uid1))
+    # print('\n')
+    # update_entry(1, 'poto', 1000, 'vodka', 'maria', 10, '', 0, 'F')
+    # print(get_filtered_inventory(uid1, '', '', 'zero'))
+    # print('\n')
+    # print(get_filtered_inventory(uid1, 'gin', '', ''))
+    # print('\n')
+    # print(get_pending_transactions(uid1))
+    # print('\n')
+    # print(get_pending_transactions(uid2))
+    # print('\n')
 

@@ -68,21 +68,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Example Row -->
-                    <tr>
-                        <td><img src="https://st2.depositphotos.com/2121815/7659/i/950/depositphotos_76594485-stock-photo-absolut-vodka-isolated-on-white.jpg" alt="Vodka" class="report-logo" /></td>
-                        <td>ABSOLUT VODKA</td>
-                        <td>750ML</td>
-                        <td>LIQUOR INC.</td>
-                        <td>-10</td>
-                    </tr>
-                    <tr>
-                        <td><img src="https://whiskyonlinecy.com/wp-content/uploads/2022/09/Hendricks-Neptunia-Gin-70cl-43.4.jpg" alt="Gin" class="report-logo" /></td>
-                        <td>HENDRICK'S GIN</td>
-                        <td>750ML</td>
-                        <td>LIQUOR INC.</td>
-                        <td>-15</td>
-                    </tr>
+                    {% for entry in report %}
+                        <tr>
+                            <td><img src="{{ entry['photo'] }}" class="report-logo" /></td>
+                            <td>{{ entry['name'] }}</td>
+                            <td>{{ entry['size'] ~ ' ML' if 1000 > entry['size'] else (entry['size'] / 1000) ~ ' L' }}</td>
+                            <td>LIQUOR INC.</td>
+                            <td>{{ entry['qnt_dif'] }}</td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

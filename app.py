@@ -462,8 +462,6 @@ def report():
         elif cqs == 'switch':
             return redirect(url_for('inventory'))
         
-         # TO If the user can do anything here
-
         return redirect(url_for('report'))
 
 @app.route('/transactions', methods=['GET', 'POST'])
