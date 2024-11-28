@@ -31,9 +31,9 @@ document.querySelectorAll('.dropdown a').forEach(link => {
     });
 });
 
-function performSearch() {
-    const query = $('#searchBar').val().trim(); // Get the search query
-
+function performSearchBulk() {
+    const query = document.getElementById('searchBar').value.trim(); // Get the search query
+    
     if (query.length === 0) {
         $('#searchDropdown').hide(); // Hide dropdown if query is empty
         return;
@@ -51,8 +51,8 @@ function performSearch() {
             } else {
                 data.forEach(item => {
                     dropdown.append(`
-                        <div onclick="selectItem('${item.uid}', '${item.name}', '${item.size}', '${item.quantity}')">
-                            ${item.name} (UID: ${item.uid})
+                        <div onclick="selectItemBulk('${item.entry_id}')">
+                            | ${item.name.toUpperCase()} ${item.size}ml ${item.supplier}
                         </div>
                     `);
                 });
@@ -62,25 +62,82 @@ function performSearch() {
         error: function() {
             alert('An error occurred while searching. Please try again.');
         }
+    });    
+}
+
+function selectItemBulk(entry_id) {
+    $.ajax({
+        url: '/selectedItemBulk',
+        method: 'GET',
+        data: { EntryID: entry_id },
+        success: function(response) {
+            if (response.html) {
+                // Update the current inventory list by appending the new items
+                $('#entriesBulk').append(response.html);
+            } else if (response.error) {
+                alert('Error: ' + response.error);
+            }
+        },
+        error: function() {
+            alert('An error occurred while selecting the item.');
+        }
     });
 }
 
-function selectItem(uid, name, size, quantity) {
-    // Hide the dropdown
-    $('#searchDropdown').hide();
 
-    // Populate the inventory table with the selected item
-    $('#inventoryBody').html(`
-        <tr>
-            <td>${uid}</td>
-            <td>${name}</td>
-            <td>${size}</td>
-            <td>${quantity}</td>
-        </tr>
-    `);
+function performSearch() {
+    const query = document.getElementById('searchBar').value.trim(); // Get the search query
+    
+    if (query.length === 0) {
+        $('#searchDropdown').hide(); // Hide dropdown if query is empty
+        return;
+    }
 
-    // Optionally, clear the search bar
-    $('#searchBar').val('');
+    $.ajax({
+        url: '/search',
+        method: 'GET',
+        data: { query: query },
+        success: function(data) {
+            const dropdown = $('#searchDropdown');
+            dropdown.empty(); // Clear previous results
+            if (data.length === 0) {
+                dropdown.append('<div>No matching items found.</div>');
+            } else {
+                data.forEach(item => {
+                    dropdown.append(`
+                        <div onclick="selectItem('${item.entry_id}')">
+                            | ${item.name.toUpperCase()} ${item.size}ml ${item.supplier}
+                        </div>
+                    `);
+                });
+            }
+            dropdown.show(); // Show dropdown
+        },
+        error: function() {
+            alert('An error occurred while searching. Please try again.');
+        }
+    });    
+}
+
+function selectItem(entry_id) {
+    $.ajax({
+        url: '/selectedItem',
+        method: 'GET',
+        data: { EntryID: entry_id },
+        success: function(response) {
+            if (response.html) {
+                // Replace the entire <body> content with the new HTML
+                document.open();
+                document.write(response.html);
+                document.close();
+            } else if (response.error) {
+                alert('Error: ' + response.error);
+            }
+        },
+        error: function() {
+            alert('An error occurred while selecting the item.');
+        }
+    });
 }
 
 // Hide dropdown if clicked outside
@@ -90,13 +147,43 @@ $(document).click(function(e) {
     }
 });
 
+let quantityUpdateTimeout;
 function changeQuantity(button, change) {
     const quantitySpan = button.parentElement.querySelector('.quantity-value');
     let currentQuantity = parseInt(quantitySpan.textContent, 10);
     currentQuantity = Math.max(0, currentQuantity + change); // Prevent negative values
     quantitySpan.textContent = currentQuantity;
+
+    // Get necessary data to send to Flask
+    const entryID = button.closest('.inventory-entry').getAttribute('data-entry-id'); // Assuming each entry has a data attribute for its ID
+    const newQuantity = currentQuantity;
+
+    // Clear any existing timeout to debounce
+    clearTimeout(quantityUpdateTimeout);
+
+    // Set a timeout to delay sending the update request
+    quantityUpdateTimeout = setTimeout(() => {
+        updateQuantityOnServer(entryID, newQuantity);
+    }, 500); // 0.5-second delay
 }
 
+function updateQuantityOnServer(entryID, quantity) {
+    // Send data to Flask
+    fetch('/updateQuantity', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ entryID, quantity }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Quantity updated successfully:', data);
+    })
+    .catch(error => {
+        console.error('Error updating quantity:', error);
+    });
+}
 
 // Open the modal
 function openModal(entryId) {
@@ -121,21 +208,53 @@ window.onclick = function (event) {
     });
 };
 
-function saveEdit() {
-    const newName = document.getElementById("editName").value;
-    const newSize = document.getElementById("editSize").value;
-    const newSupplier = document.getElementById("editSupplier").value;
-    const newMin = document.getElementById("editMin").value;
+function openEditModal(uid, photo, name, size, category, supplier, minRequirement) {
+    document.querySelector('[name="u_item_uid"]').value = uid;
+    document.querySelector('[name="u_item_photo"]').value = photo;
+    document.querySelector('[name="u_item_name"]').value = name;
+    document.querySelector('[name="u_item_category"]').value = category;
+    document.querySelector('[name="u_item_size"]').value = size;
+    document.querySelector('[name="u_item_supplier"]').value = supplier;
+    document.querySelector('[name="u_item_min_requirement"]').value = minRequirement;
 
-    // Update the entry in the main inventory
-    const entryDetails = document.querySelector(".entry-name").closest(".inventory-entry");
-    entryDetails.querySelector(".entry-text").innerHTML = `
-        <strong class="entry-name">${newName}</strong> ${newSize} | SUPPLIER: ${newSupplier} | MIN: ${newMin}
-    `;
-
-    // Close the modal
-    closeEditSidebar();
+    // Open the modal
+    document.getElementById('editModal').style.display = 'block';
 }
+
+function saveEdit() {
+    const formData = new FormData(document.getElementById('updateEntry'));
+    const data = {
+        u_item_uid: formData.get('u_item_uid'),
+        u_item_photo: formData.get('u_item_photo'),
+        u_item_name: formData.get('u_item_name'),
+        u_item_category: formData.get('u_item_category'),
+        u_item_size: formData.get('u_item_size'),
+        u_item_supplier: formData.get('u_item_supplier'),
+        u_item_min_requirement: formData.get('u_item_min_requirement'),
+    };
+
+    fetch('/updateEntry', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(result => {
+        console.log('Update successful:', result);
+        location.reload(); // Reload the page to reflect the changes
+    })
+    .catch(error => {
+        console.error('Error updating item:', error);
+    });
+}
+
 
 // Remove a specific drink entry
 function removeDrink(entryId) {
@@ -165,40 +284,5 @@ function submitIncrement() {
     entries.forEach(entry => {
         entry.remove();
     });
-}
-
-function saveNewEntry() {
-    const newName = document.getElementById("addName").value;
-    const newSize = document.getElementById("addSize").value;
-    const newSupplier = document.getElementById("addSupplier").value;
-    const newMin = document.getElementById("addMin").value;
-    const newCategory = document.getElementById("addCategory").value;
-    const newPicture = document.getElementById("addPicture").value;
-
-    const newEntry = document.createElement('div');
-    newEntry.classList.add('inventory-entry');
-
-    newEntry.innerHTML = `
-        <img src="${newPicture}" alt="${newName}" class="entry-image">
-        <div class="entry-details">
-            <span class="entry-info">
-                <span class="entry-text">
-                    <strong class="entry-name">${newName}</strong> ${newSize} | SUPPLIER: ${newSupplier} | MIN: ${newMin} | CATEGORY: ${newCategory}
-                </span>
-                <span class="entry-quantity">
-                    <button class="quantity-btn" onclick="changeQuantity(this, -1)">-</button>
-                    <span class="quantity-value">0</span>
-                    <button class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
-                </span>
-            </span>
-        </div>
-        <img src="https://www.svgrepo.com/show/304506/edit-pen.svg" alt="EDIT" class="edit-button" onclick="openEditSidebar()">
-    `;
-
-    // Add the new entry to the inventory
-    document.querySelector(".entry-list").appendChild(newEntry);
-
-    // Close the modal
-    closeAddEntryModal();
 }
 

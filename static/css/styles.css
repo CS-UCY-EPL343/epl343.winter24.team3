@@ -83,6 +83,8 @@ html, body {
     /* color: #f3e9ff;  */
     text-decoration: none;
     margin-left: 5px;
+    margin-right: 5px;
+    margin-top: 5px;
 }
 
 .sidebar-dropdown {
@@ -500,4 +502,124 @@ html, body {
     height: 50px; /* Explicit height for uniformity */
     border-radius: 5px; 
     object-fit: cover; /* Ensures image fits perfectly */
+}
+
+.switchUserButton {
+    outline: none; /* Removes the outline */
+    border: none;  /* Ensures there’s no border */
+    background: none; /* Remove default background */
+    font-size: 16px;
+    padding: 8px 12px;
+    width: 100%;
+    text-align: left;
+    background-color: #7c28c1;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.switchUserButton:hover {
+    background-color: #9d4edd; 
+    color: #ebd7ff; 
+    border-radius: 6px;  
+    transition: all 0.3s ease;
+}
+
+.switchUserButton:active {
+    transform: scale(0.98);
+    background-color: #5a189a;
+}
+
+/* ------------------------------ search -------------------------------------- */
+
+#searchDropdown {
+    display: none; /* Initially hidden */
+    position: absolute; /* Positions it relative to the parent element */
+    background-color: white; /* White background for visibility */
+    border: 1px solid #4a007e; /* Subtle border */
+    z-index: 1000; /* Ensure it appears above other content */
+    width: 400px; /* Make it wide enough */
+    max-height: 150px; /* Limit height to avoid overflowing */
+    overflow-y: auto; /* Add scroll if content exceeds max-height */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    border-radius: 5px; /* Rounded corners for a smooth look */
+    font-family: Arial, sans-serif; /* Clean font */
+    box-sizing: border-box; /* Include padding and borders in width/height calculations */
+}
+
+#searchDropdown div {
+    color: #4a007e;
+    padding: 10px; /* Add padding for better spacing */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.2s ease, color 0.2s ease; /* Smooth hover transition */
+}
+
+#searchDropdown div:hover {
+    background-color: #6a0dad; /* Darker background on hover */
+    color: white; /* Change text color on hover */
+}
+
+#searchDropdown div:active {
+    transform: scale(0.98); /* Slight scale down effect on click */
+}
+
+/* Optional: Add a placeholder for when there are no results */
+#searchDropdown .no-results {
+    padding: 10px;
+    color: #4a007e;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* ------------------------------------------------------------------------ */
+
+.viewFullInventory-btn {
+    background-color: #7c28c1; 
+    border: 1px solid #ce9eff; 
+    border-radius: 6px;
+    padding: 10px 15px;
+    font-size: 18px;
+    color: #e9d5ff;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    text-transform: uppercase;
+    width: 240px; 
+}
+
+.viewFullInventory-btn:hover {
+    background-color: #5a189a; 
+    border: 1px solid #ce9eff; 
+    border-radius: 6px; 
+}
+
+/* For the flash modal */
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+#flashMessage {
+    font-size: 18px;
+    font-weight: bold;
+    color: #4a007e;  /* Green color for success message */
+    margin-top: 10px;
+}
+
+#flashModal {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
