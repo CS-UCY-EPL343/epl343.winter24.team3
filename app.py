@@ -5,12 +5,14 @@ app: Flask = Flask(__name__)
 app.secret_key = 'team3'
 app.config['SECRET_KEY'] = 'team3_key_super_secret'
 
+to_be_removed_items: list[dict] = []
+to_be_added_items: list[dict] = []
+
 @app.route('/search', methods=['GET'])
 def search():
     query: str = request.args.get('query', '').strip()  # Get the search query
     if not query:
         return jsonify([])  # Return an empty list if the query is blank
-
     try:
         # Perform the search using your database
         results = db.search_inventory(session.get('UID'), query)
@@ -65,13 +67,12 @@ def update_quantity():
 def update_entry():
     try:
         data = request.get_json()  # Parse JSON from request
-        
         # Extract fields
         item_uid = data.get('u_item_uid')
         item_photo = data.get('u_item_photo')
         item_name = data.get('u_item_name')
         item_size = data.get('u_item_size')
-        item_category = data.get('u_item_category')
+        item_category = data.get('u_item_category').upper()
         item_supplier = data.get('u_item_supplier')
         item_min_requirement = data.get('u_item_min_requirement')
 
@@ -86,7 +87,56 @@ def update_entry():
     except Exception as e:
         print(f"Error updating item: {e}")
         return jsonify({'error': 'An error occurred while updating the item.'}), 500
+    
+@app.route('/removeDecrease', methods=['POST'])
+def removeDecrease():
+    global to_be_removed_items
+    entry_id = request.form.get('entry_id')
+    for item in to_be_removed_items:
+        if item['entry_id'] == entry_id:
+            to_be_removed_items.remove(item)
 
+    try:
+        quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
+    except Exception as e:
+        print(e)
+        flash('An error occurred while retrieving data.')
+        print('An error occurred while retrieving data.')
+        return redirect(url_for('bulkDecrease'))
+    
+    x: list[dict] = []
+    for rem_item in to_be_removed_items:
+        temp: dict = db.get_entry(session['UID'], rem_item['entry_id'])[0]
+        temp['quantity_difference'] = rem_item['quantity']
+        x.append(temp)
+
+    rendered_template = render_template('bulkDecrease.html', quick_switch_users= quick_switch_users, to_be_removed_items=x)
+    return jsonify({'html': rendered_template})
+
+@app.route('/removeIncrease', methods=['POST'])
+def removeIncrease():
+    global to_be_added_items
+    entry_id = request.form.get('entry_id')
+    for item in to_be_added_items:
+        if item['entry_id'] == entry_id:
+            to_be_added_items.remove(item)
+
+    try:
+        quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
+    except Exception as e:
+        print(e)
+        flash('An error occurred while retrieving data.')
+        print('An error occurred while retrieving data.')
+        return redirect(url_for('bulkIncrease'))
+    
+    x: list[dict] = []
+    for add_item in to_be_added_items:
+        temp: dict = db.get_entry(session['UID'], add_item['entry_id'])[0]
+        temp['quantity_difference'] = add_item['quantity']
+        x.append(temp)
+
+    rendered_template = render_template('bulkIncrease.html', quick_switch_users= quick_switch_users, to_be_added_items=x)
+    return jsonify({'html': rendered_template})
 
 def CheckQuickSwitch() -> bool|str:
     # Check if quick switch is called
@@ -165,11 +215,6 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
-        # from remember me
-        if 'username' in session:
-            return redirect(url_for('inventory'))
-        
-        # If not log in
         return render_template('login.html')
 
     elif request.method == 'POST': 
@@ -188,9 +233,6 @@ def login():
             flash('Error occurred while validating user details.')
             return redirect(url_for('login'))
 
-        # Else the credentials are correct, update the session
-        remember_me: bool = request.form.get('remember_me') or False
-
         session['username'] = username
         try:
             session['UID'] = db.get_user_uid(username)
@@ -198,16 +240,8 @@ def login():
             print(e)
             flash('Error occurred while changing session details.')
             return redirect(url_for('login'))
-        
-        # # if remember me is true, set the session lifetime
-        # if remember_me:
-        #     from datetime import timedelta
-        #     app.permanent_session_lifetime = timedelta(days= 150)
-        #     session.modified = True
-        #     session.permanent = True
 
         # goto main page
-        print('login successful')
         return redirect(url_for('inventory'))
     
 @app.route('/register', methods=['GET', 'POST'])
@@ -271,9 +305,6 @@ def logout():
     if 'username' in session:
         username: str = session.pop('username', None).title()
         session.pop('UID')
-        flash(f'{username} has logged out succesfully.')
-        print(f'{username} has logged out succesfully.')
-        session.modified = True 
     return redirect(url_for('login'))
 
 @app.route('/inventory', methods=['GET', 'POST'])
@@ -538,6 +569,7 @@ def transactions():
 
 @app.route('/bulkIncrease', methods=['GET', 'POST'])
 def bulkIncrease():
+    global to_be_added_items
     # If not logged in
     if 'username' not in session:
         return render_template('login.html')
@@ -550,8 +582,14 @@ def bulkIncrease():
             flash('An error occurred while retrieving data.')
             print('An error occurred while retrieving data.')
             return redirect(url_for('bulkIncrease'))
-        # TO
-        return render_template('bulkIncrease.html', quick_switch_users= quick_switch_users)
+        
+        x: list[dict] = []
+        for rem_item in to_be_added_items:
+           temp: dict = db.get_entry(session['UID'], rem_item['entry_id'])[0]
+           temp['quantity_difference'] = rem_item['quantity']
+           x.append(temp)
+
+        return render_template('bulkIncrease.html', quick_switch_users= quick_switch_users, to_be_added_items= x)
 
     elif request.method == 'POST':
         # Check quick switch or add new quick switch user
@@ -561,32 +599,47 @@ def bulkIncrease():
         elif cqs == 'switch':
             return redirect(url_for('inventory'))
 
-        # Bulk increase
+        if 'addBulkIncrease' in request.form:
+            for item in to_be_added_items:
+                if request.form.get('entry_id') == item['entry_id']:
+                    print('Item already inserted.')
+                    return redirect(url_for('bulkIncrease'))
+
+            entry_id = request.form.get('entry_id')
+            quantity = request.form.get('quantity')
+            item = {
+                'entry_id': entry_id,
+                'quantity': quantity,
+            }
+            to_be_added_items.append(item)
+            return redirect(url_for('bulkIncrease'))
+
         # Check if the submit button was pressed
         if 'submitBulkIncrease' in request.form:
             # Retrieve the submitted products and quantities
-            product_uids = request.form.getlist('productUID')  # A list of product IDs
-            product_quantities = request.form.getlist('productQuantity')  # A list of quantities
+            product_uids = [item['entry_id'] for item in to_be_added_items]
+            product_quantities = [item['quantity'] for item in to_be_added_items]
 
             # Process each product with its quantity
             for product_uid, quantity in zip(product_uids, product_quantities):
-                if quantity and int(quantity) > 0:
-                    # Update the database or perform the bulk increase operation here
-                    try:
-                        db.increase_quantity(product_uid, int(quantity))
-                    except Exception as e:
-                        print(e)
-                        flash('Error increasing quantity for product: {product_uid}')
-                        print('Error increasing quantity for product: {product_uid}')
+                # Update the database or perform the bulk Increase operation here
+                try:
+                    db.increase_quantity(product_uid, int(quantity))
+                except Exception as e:
+                    print(e)
+                    flash(f'Error decreasing quantity for product: {product_uid}')
+                    print(f'Error decreasing quantity for product: {product_uid}')
 
-            flash('Bulk increase successful!', 'success')
-            print('Bulk increase successful!')
+            to_be_added_items = [] # discard items
+            flash('Bulk Increase successful!')
+            print('Bulk Increase successful!')
             return redirect(url_for('inventory'))
 
         return redirect(url_for('bulkIncrease')) 
 
 @app.route('/bulkDecrease', methods=['GET', 'POST'])
 def bulkDecrease():
+    global to_be_removed_items
     # If not logged in
     if 'username' not in session:
         return render_template('login.html')
@@ -599,8 +652,14 @@ def bulkDecrease():
             flash('An error occurred while retrieving data.')
             print('An error occurred while retrieving data.')
             return redirect(url_for('bulkDecrease'))
-        # TO
-        return render_template('bulkDecrease.html', quick_switch_users= quick_switch_users, to_be_removed_items= [])
+        
+        x: list[dict] = []
+        for rem_item in to_be_removed_items:
+           temp: dict = db.get_entry(session['UID'], rem_item['entry_id'])[0]
+           temp['quantity_difference'] = rem_item['quantity']
+           x.append(temp)
+
+        return render_template('bulkDecrease.html', quick_switch_users= quick_switch_users, to_be_removed_items= x)
 
     elif request.method == 'POST':
         # Check quick switch or add new quick switch user
@@ -610,12 +669,26 @@ def bulkDecrease():
         elif cqs == 'switch':
             return redirect(url_for('inventory'))
 
-        # Bulk decrease
+        if 'addBulkDecrease' in request.form:
+            for item in to_be_removed_items:
+                if request.form.get('entry_id') == item['entry_id']:
+                    print('Item already inserted.')
+                    return redirect(url_for('bulkDecrease'))
+
+            entry_id = request.form.get('entry_id')
+            quantity = request.form.get('quantity')
+            item = {
+                'entry_id': entry_id,
+                'quantity': quantity,
+            }
+            to_be_removed_items.append(item)
+            return redirect(url_for('bulkDecrease'))
+
         # Check if the submit button was pressed
         if 'submitBulkDecrease' in request.form:
             # Retrieve the submitted products and quantities
-            product_uids = request.form.getlist('productUID')  # A list of product IDs
-            product_quantities = request.form.getlist('productQuantity')  # A list of quantities
+            product_uids = [item['entry_id'] for item in to_be_removed_items]
+            product_quantities = [item['quantity'] for item in to_be_removed_items]
 
             # Process each product with its quantity
             for product_uid, quantity in zip(product_uids, product_quantities):
@@ -630,9 +703,11 @@ def bulkDecrease():
                         db.decrease_quantity(product_uid, int(quantity))
                     except Exception as e:
                         print(e)
-                        flash('Error decreasing quantity for product: {product_uid}')
-                        print('Error decreasing quantity for product: {product_uid}')
+                        flash(f'Error decreasing quantity for product: {product_uid}')
+                        print(f'Error decreasing quantity for product: {product_uid}')
 
+            to_be_removed_items = [] # discard items
+            flash('Bulk decrease successful!')
             print('Bulk decrease successful!')
             return redirect(url_for('inventory'))
 

@@ -31,60 +31,6 @@ document.querySelectorAll('.dropdown a').forEach(link => {
     });
 });
 
-function performSearchBulk() {
-    const query = document.getElementById('searchBar').value.trim(); // Get the search query
-    
-    if (query.length === 0) {
-        $('#searchDropdown').hide(); // Hide dropdown if query is empty
-        return;
-    }
-
-    $.ajax({
-        url: '/search',
-        method: 'GET',
-        data: { query: query },
-        success: function(data) {
-            const dropdown = $('#searchDropdown');
-            dropdown.empty(); // Clear previous results
-            if (data.length === 0) {
-                dropdown.append('<div>No matching items found.</div>');
-            } else {
-                data.forEach(item => {
-                    dropdown.append(`
-                        <div onclick="selectItemBulk('${item.entry_id}')">
-                            | ${item.name.toUpperCase()} ${item.size}ml ${item.supplier}
-                        </div>
-                    `);
-                });
-            }
-            dropdown.show(); // Show dropdown
-        },
-        error: function() {
-            alert('An error occurred while searching. Please try again.');
-        }
-    });    
-}
-
-function selectItemBulk(entry_id) {
-    $.ajax({
-        url: '/selectedItemBulk',
-        method: 'GET',
-        data: { EntryID: entry_id },
-        success: function(response) {
-            if (response.html) {
-                // Update the current inventory list by appending the new items
-                $('#entriesBulk').append(response.html);
-            } else if (response.error) {
-                alert('Error: ' + response.error);
-            }
-        },
-        error: function() {
-            alert('An error occurred while selecting the item.');
-        }
-    });
-}
-
-
 function performSearch() {
     const query = document.getElementById('searchBar').value.trim(); // Get the search query
     
@@ -255,16 +201,6 @@ function saveEdit() {
     });
 }
 
-
-// Remove a specific drink entry
-function removeDrink(entryId) {
-    // Find the specific entry by its ID and remove it from the DOM
-    const entry = document.getElementById(entryId);
-    if (entry) {
-        entry.remove();
-    }
-}
-
 // Remove all entries when submit is clicked
 function submitDecrement() {
     // Get all the entries inside the 'entry-list' container
@@ -286,3 +222,78 @@ function submitIncrement() {
     });
 }
 
+function performSearchBulk() {
+    const query = document.getElementById('searchBar').value.trim(); // Get the search query
+    
+    if (query.length === 0) {
+        $('#searchDropdown').hide(); // Hide dropdown if query is empty
+        return;
+    }
+
+    $.ajax({
+        url: '/search',
+        method: 'GET',
+        data: { query: query },
+        success: function(data) {
+            const dropdown = $('#searchDropdown');
+            dropdown.empty(); // Clear previous results
+            if (data.length === 0) {
+                dropdown.append('<div>No matching items found.</div>');
+            } else {
+                data.forEach(item => {
+                    dropdown.append(`
+                        <div onclick="selectItemBulk('${item.entry_id}')">
+                            | ${item.name.toUpperCase()} ${item.size}ml ${item.supplier}
+                        </div>
+                    `);
+                });
+            }
+            dropdown.show(); // Show dropdown
+        },
+        error: function() {
+            alert('An error occurred while searching. Please try again.');
+        }
+    });    
+}
+
+function selectItemBulk(entry_id) {
+    // Populate and open the modal for quantity input
+    document.getElementById('selectedEntryID').value = entry_id; // Set hidden input for entry_id
+    document.getElementById('quantityModal').style.display = 'block';
+}
+
+function removeDrinkD(entry_id) {
+    // Make the POST request to remove the item
+    $.ajax({
+        url: '/removeDecrease', // Backend endpoint for removing the item
+        method: 'POST',
+        data: { entry_id: entry_id }, // Send the entry ID
+        success: function (response) {
+            if (response.html) {
+                // Replace the entire page content with the updated HTML
+                document.body.innerHTML = response.html;
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('Error:', xhr.responseText);
+        }
+    });
+}
+
+function removeDrinkI(entry_id) {
+    // Make the POST request to remove the item
+    $.ajax({
+        url: '/removeDecrease', // Backend endpoint for removing the item
+        method: 'POST',
+        data: { entry_id: entry_id }, // Send the entry ID
+        success: function (response) {
+            if (response.html) {
+                // Replace the entire page content with the updated HTML
+                document.body.innerHTML = response.html;
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('Error:', xhr.responseText);
+        }
+    });
+}

@@ -56,36 +56,56 @@
 
         <!-- Main Content -->
         <div class="bulk-container">
+            <!-- Search Bar -->
             <div class="search-bar-container">
-                <input type="text" id="searchBar" placeholder="Search a product..." onkeyup="performSearch()">
+                <input type="text" id="searchBar" placeholder="Search a product..." onkeyup="performSearchBulk()">
+                <div id="searchDropdown" class="dropdown-list"></div>
             </div>
-    
-            <!-- Selected Drinks List -->
+        
+            <!-- Bulk Addition Section -->
             <div id="selectedDrinksList" class="inventory-section">
                 <h2>PRODUCTS TO INCREASE IN INVENTORY</h2>
-
-                <div class="entry-list">
-                    <!-- Existing entries -->
-                    <div id="entry1" class="inventory-entry">
-                        <img src="https://st2.depositphotos.com/2121815/7659/i/950/depositphotos_76594485-stock-photo-absolut-vodka-isolated-on-white.jpg" alt="Absolute Vodka" class="entry-image">
-                        <div class="entry-details">
-                            <span class="entry-info">
-                                <span class="entry-text">
-                                    <strong class="entry-name">ABSOLUT VODKA</strong> 750ML | SUPPLIER: LIQUOR INC. | MIN: 5
-                                </span>
-                                <div class="drink-actions">
-                                    <input type="number" value="0" class="drink-quantity"/>
-                                    <button class="quantity-btn" onclick="removeDrink('entry1')">Remove</button>
+                <form method="post">
+                    <div id="entriesBulk" class="entry-list">
+                        <div class="entry-list">
+                        {% for entry in to_be_added_items %}
+                            <div class="inventory-entry" id="{{ entry['entry_id'] }}">
+                                <img src="{{ entry['photo'] or 'static/images/default_bottle.avif' }}" alt="{{ entry['name'] }}" class="entry-image"/>
+                                <div class="entry-details">
+                                    <span class="entry-info">
+                                        <span class="entry-text">
+                                            <strong class="entry-name">{{ entry['name'] }}</strong>
+                                            {{ entry['size'] ~ ' ML' if 1000 > entry['size'] else (entry['size'] / 1000) ~ ' L' }} | 
+                                            Supplier: {{ entry['supplier'] }} | Quantity To add: {{ entry['quantity_difference'] }}
+                                        </span>
+                                        <div class="drink-actions">
+                                            <button class="quantity-btn" onclick="removeDrinkI('{{ entry['entry_id'] }}')">remove</button>
+                                        </div>
+                                    </span>
                                 </div>
-                            </span>
-                        </div>
+                            </div>
+                        {% endfor %}
                     </div>
-                </div>
-
-                <!-- Submit Button -->
-                <button class="submit-btn" id="submit" onclick="submitIncrement()">SUBMIT</button>
+                    <button class="submit-btn" id="submitBulkIncrease" name="submitBulkIncrease" onclick="submitIncreament()">SUBMIT</button>
+                </form>
             </div>
         </div>
+
+        <!-- Quantity Input Modal -->
+        <div id="quantityModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('quantityModal')">&times;</span>
+                <form id="quantityForm" method="post">
+                    <input type="hidden" id="selectedEntryID" name="entry_id">
+                    <div>
+                        <label for="quantityInput">Quantity To add:</label>
+                        <input type="number" id="quantityInput" name="quantity" min="1" required>
+                    </div>
+                    <button type="submit" id="addBulkIncrease" name="addBulkIncrease">Submit</button>
+                </form>
+            </div>
+        </div>
+        
 
         <!-- Flash Modal -->
         {% if get_flashed_messages() %}
