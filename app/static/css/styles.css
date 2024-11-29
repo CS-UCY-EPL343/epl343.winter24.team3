@@ -160,7 +160,7 @@ html, body {
     border-top: 2px solid #ce9eff; 
 }
 
-.inventory-container, .bulk-container, .report-container {
+.inventory-container, .bulk-container, .report-container, .transactions-container {
     padding: 20px;
     margin-top: 80px;
     transition: margin-left 0.6s ease;
@@ -175,6 +175,10 @@ html, body {
 }
 
 .sidebar:not(.close) + .report-container {
+    margin-left: 250px; /* Sidebar width */
+}
+
+.sidebar:not(.close) + .transactions-container {
     margin-left: 250px; /* Sidebar width */
 }
 
@@ -622,4 +626,80 @@ html, body {
     to {
         opacity: 1;
     }
+}
+
+/* transactions */
+.quantity-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.quantity-btn-blk {
+    background-color: #7c28c1; /* Bright purple */
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    margin: 0 5px;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.quantity-btn-blk:hover {
+    background-color: #9d4edd; /* Darker purple */
+}
+
+.quantity-value {
+    font-size: 18px;
+    color: #4a007e; /* Deep purple */
+    margin: 0 10px;
+}
+
+#makeRequestModal .modal-content {
+    width: 420px; 
+    padding: 30px; /* More padding for a spacious feel */
+    background-color: #f3e9ff; /* Same color for consistency */
+    border-radius: 12px; /* Slightly larger border radius for elegance */
+}
+
+#makeRequestModal .modal-content input[type="text"] {
+    width: 365px;
+}
+
+#makeRequestModal #requestType {
+    width: 385px;
+}
+
+#makeRequestModal .modal-content .quantity-btn-rep {
+    width: 30px;
+    height: 30px; 
+    font-size: 14px; 
+    padding: 0; 
+    border-radius: 4px; 
+    background-color: #7c28c1; 
+    color: #fff; 
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#makeRequestModal .modal-content .quantity-btn-rep:hover {
+    background-color: #9d4edd; /* Slightly darker hover effect */
+}
+
+/* Quantity Value Styling */
+#makeRequestModal .modal-content .quantity-value {
+    font-size: 16px; /* Adjust font size to match smaller buttons */
+    margin: 0 10px; /* Add spacing between buttons and value */
+}
+
+#pendingIncomingRequests .entry-text, #pendingOutgoingRequests .entry-text{
+    font-size: 16px;
+}
+
+#pendingIncomingRequests .drink-actions button{
+    margin-right: -10px;
 }

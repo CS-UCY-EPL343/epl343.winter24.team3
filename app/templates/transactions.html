@@ -10,7 +10,7 @@
     <body>
         <!-- Top Bar -->
         <div class="top-bar" id="topBar" name="topBar">
-            <img class="logo" src="..\static\images\logo.jpg" alt="Logo" onclick="toggleSidebar()" />
+            <img class="logo" src="..\static\images\logo.png" alt="Logo" onclick="toggleSidebar()" />
             <div class="title">Trackventory</div>
             <div class="user-actions">
                 <div class="user-dropdown">
@@ -54,60 +54,107 @@
             <a href="/report">REPORT</a>
         </div>
 
-        <!-- Content -->
-        <div class="content">
-            <div class="transaction-container">
-                <!-- Transaction Box -->
-                <div class="transaction-box">
-                    <h3>MAKE TRANSACTIONS</h3>
-
-                    <!-- SEND REQUEST Button -->
-                    <div class="send-request-container">
-                        <button class="request-btn">SEND REQUEST</button>
-                    </div>
-
-                    <!-- Search, Input, Send Request and Quantity Fields on Same Line -->
-                        <div class="search-box">
-                            <input type="text" id="searchBar" placeholder="Search a product...">
+        <!-- Main Content -->
+        <div class="transactions-container">
+            <!-- Transaction Box -->
+            <div class="search-filter-container">
+                <button class="add-entry-btn" id="makeRequestButton" onclick="openModal('makeRequestModal')">MAKE REQUEST</button>
+            </div>
+            
+            <!-- Make Requests Modal -->
+            <div id="makeRequestModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('makeRequestModal')">&times;</span>
+                    <h2 style="text-align: center; color: #4a007e;">MAKE REQUEST</h2>
+                    <form id="makeRequestForm" method="post" name="submitTransaction">
+                        <!-- Search Bar -->
+                        <div>
+                            <label for="searchBar">Search Product:</label>
+                            <input type="text" id="searchBar" placeholder="Search a product..." onkeyup="performSearchTra()" onclick="empty()" value="">
+                            <input type="hidden" id="item_uid" name="item_uid" style="display: none;" value="">
+                            <div id="searchDropdown"></div>
                         </div>
-
-                        <div class="input-bar">
-                            <input type="text" id="inputField" placeholder="Enter user name..." />
+                        <!-- Username Field -->
+                        <div>
+                            <label for="usernameField">Username to Send To:</label>
+                            <input type="text" id="to_user" name="to_user" placeholder="Enter username...">
                         </div>
-
+                        <!-- Request Type Dropdown -->
+                        <div>
+                            <label for="requestType">Request Type:</label>
+                            <select id="requestType" name="requestType">
+                                <option value="1">Requesting</option>
+                                <option value="-1">Sending</option>
+                            </select>
+                        </div>
                         <!-- Quantity Selector -->
-                        <div class="quantity-container">
-                            <h3></h3>
-                            <span class="entry-quantity">
-                                <button class="quantity-btn" onclick="changeQuantity(this, -1)">-</button>
-                                <span class="quantity-value">1</span>
-                                <button class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
-                            </span>
+                        <div>
+                            <label for="quantity">Quantity:</label>
+                            <div class="quantity-container">
+                                <button type="button" class="quantity-btn-rep" onclick="changeQuantityTemp(this, -1)">-</button>
+                                <span class="quantity-value" id="quantitySpan" name="quantitySpan" min="0">1</span>
+                                <button type="button" class="quantity-btn-rep" onclick="changeQuantityTemp(this, 1)">+</button>
+                                <input type="hidden" id="quantity" name="quantity" value="1"/>
+                            </div>
                         </div>
-
                         <!-- Submit Button -->
-                        <div class="submit-container">
-                            <button class="submit-btn" onclick="handleInput()">SUBMIT</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pending Box -->
-                <div class="pending-box">
-                    <h3>PENDING</h3>
-                    <div class="pending-content">
-                        <div class="pending-item">
-                            <div class="pending-details">
-                                <p><strong>ABSOLUT VODKA</strong> 750ML | SUPPLIER: LIQUOR INC. | +5</p>
-                            </div>
-                            <div class="pending-actions">
-                                <button class="action-btn" onclick="markAsDone(this)">ACCEPT</button>
-                                <button class="action-btn" onclick="markAsDone(this)">REJECT</button>
-                            </div>
-                        </div>
-                    </div>
+                        <button type="submit" name="submitTransaction">SUBMIT</button>
+                    </form>
                 </div>
             </div>
+
+            <!-- Pending Outgoing Requests -->
+            {% if waits_for_answer %}
+                <div id="pendingOutgoingRequests" class="inventory-section">
+                    <h2>PENDING OUTGOING REQUESTS</h2>
+                    <div class="entry-list">
+                        {% for entry in waits_for_answer %}
+                            <!-- Existing entries -->
+                            <div id="{{ entry['entry_id'] }}" class="inventory-entry">
+                                <img src="{{ entry['photo'] or 'static/images/default_bottle.avif' }}" alt="{{ entry['name'] }}" class="entry-image">
+                                <div class="entry-details">
+                                    <span class="entry-info">
+                                        <span class="entry-text">
+                                            <strong class="entry-name">{{ entry['name'] }}</strong>
+                                            {{ entry['size'] ~ ' ML' if 1000 > entry['size'] else (entry['size'] / 1000) ~ ' L' }} | 
+                                            Quantity: {{ entry['qnt'] }} - REQUEST: <strong>{{ entry['qnt_dif'] }}</strong> | TO: <strong>{{ entry['username'] }}</strong>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Pending Incoming Requests -->
+            {% if has_to_answer %}
+                <div id="pendingIncomingRequests" class="inventory-section">
+                    <h2>PENDING INCOMING REQUESTS</h2>
+                    <div class="entry-list">
+                        {% for entry in has_to_answer %}
+                            <!-- Existing entries -->
+                            <div id="{{ entry['entry_id'] }}" class="inventory-entry">
+                                <img src="{{ entry['photo'] or 'static/images/default_bottle.avif' }}" alt="{{ entry['name'] }}" class="entry-image">
+                                <div class="entry-details">
+                                    <span class="entry-info">
+                                        <span class="entry-text">
+                                            <strong class="entry-name">{{ entry['name'] }}</strong>
+                                            {{ entry['size'] ~ ' ML' if 1000 > entry['size'] else (entry['size'] / 1000) ~ ' L' }} | 
+                                            Quantity: {{ entry['qnt'] }} - REQUEST: <strong>{{ entry['qnt_dif']*(-1) }}</strong> | FROM: <strong>{{ entry['username'] }}</strong>
+                                        </span>
+                                        <form class="drink-actions" name="answerTransaction" method="POST">
+                                            <input type="hidden" name="answerTransaction" value="" />
+                                            <button class="quantity-btn-blk" name="accept_{{ entry['trans_id'] }}">ACCEPT</button>
+                                            <button class="quantity-btn-blk" name="reject_{{ entry['trans_id'] }}">REJECT</button>
+                                        </form>
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
         </div>
 
         <!-- Flash Modal -->

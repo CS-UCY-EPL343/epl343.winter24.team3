@@ -9,7 +9,7 @@
 <body>
     <div class="login-container">
         <!-- Logo Image above the form -->
-        <img src="../static/images/logo.jpg" alt="Trackventory Logo" class="logo">
+        <img src="../static/images/logo.png" alt="Trackventory Logo" class="logo">
 
         <!-- Login Form -->
         <div id="login-form">
@@ -29,5 +29,14 @@
             </p>
         </div>
     </div>
+    <!-- Flash Modal -->
+    {% if get_flashed_messages() %}
+        <div id="flashModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeFlashModal()">&times;</span>
+                <p id="flashMessage">{{ get_flashed_messages()[0] }}</p>
+            </div>
+        </div>
+    {% endif %}
 </body>
 </html>

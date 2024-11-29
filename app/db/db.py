@@ -253,15 +253,25 @@ def get_pending_transactions(uid):
     # > create cursor to access the db.
     cursor = connection.cursor()
     pendingTrans = """
-    SELECT E.*, U.USERNAME, P.QNT
+    SELECT E.*, U.USERNAME, P.QNT, P.TRANS_ID
     FROM (ENTRY E JOIN PENDING_TRANSACTIONS P ON E.ENTRY_ID = P.ENTRY_ID AND P.UID_ANS_TRANS = (?))
     JOIN USER U ON P.UID_REQ_TRANS = U.UID"""
     cursor.execute(pendingTrans, (uid,))
     rows = cursor.fetchall()
-    connection.close()
     #return rows
-    transactions = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8], "username" : elem[9], "qnt_dif" : elem[10]} for elem in rows]
-    return transactions
+    has_to_answer = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8], "username" : elem[9], "qnt_dif" : elem[10], "trans_id": elem[11]} for elem in rows]
+    
+    pendingTrans = """
+    SELECT E.*, U.USERNAME, P.QNT
+    FROM (ENTRY E JOIN PENDING_TRANSACTIONS P ON E.ENTRY_ID = P.ENTRY_ID AND P.UID_REQ_TRANS = (?))
+    JOIN USER U ON P.UID_ANS_TRANS = U.UID"""
+    cursor.execute(pendingTrans, (uid,))
+    rows = cursor.fetchall()
+    #return rows
+    waits_for_answer = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8], "username" : elem[9], "qnt_dif" : elem[10]} for elem in rows]
+    
+    connection.close()
+    return has_to_answer, waits_for_answer
 
 def add_transaction(uid, to_uid, entry_id, qnt): 
     if uid == to_uid:
@@ -308,12 +318,21 @@ def answer_transaction(trans_id, answer):
         getAnsEid = """SELECT A.ENTRY_ID FROM ENTRY A, ENTRY R WHERE R.ENTRY_ID = (?) AND A.UID = (?) AND R.UID = (?) AND A.NAME = R.NAME AND A.SIZE = R.SIZE"""
         cursor.execute(getAnsEid, (entry_id_req, uidAns, uidReq))
         values = cursor.fetchall()
+        if values == [] and qnt < 0:
+            entry = get_entry(uidReq, entry_id_req)[0]
+            create_entry(uidAns, entry['name'], entry['size'], entry['category'], entry['supplier'], entry['min_requirement'], entry['photo'], 0)
+            cursor.execute(getAnsEid, (entry_id_req, uidAns, uidReq))
+            values = cursor.fetchall()
+        elif values == [] and qnt > 0:
+            raise ValueError("You dont have enough stock!")
+
         try:
             entry_id_ans = values[0][0]
         except ValueError:
             return
         decrease_quantity(entry_id_ans, qnt)
         increase_quantity(entry_id_req, qnt)
+
     delTrans = """DELETE FROM PENDING_TRANSACTIONS WHERE TRANS_ID = (?)"""
     cursor.execute(delTrans, (trans_id,))
     connection.commit()
@@ -358,7 +377,6 @@ def get_quantity(entry_id):
         connection.close()
         return qnt[0][0]
     except IndexError:
-        print("🐍 File: db/db.py | Line: 301 | get_quantity ~ entry_id:", entry_id) # TO
         raise IndexError
 
 def add_log_ent(entry_id, qnt_dif):
@@ -406,13 +424,13 @@ def get_entry_id(uid, name, size, supplier):
     except IndexError:
         return None
 
-if __name__ == "__main__":
-    try:
-        drop_all()
-    except sqlite3.OperationalError:
-        ...
-    finally:
-        import __init__
+# if __name__ == "__main__":
+    # try:
+    #     drop_all()
+    # except sqlite3.OperationalError:
+    #     ...
+    # finally:
+    #     import __init__
 
     # set_user('user_1', 'password1')
     # set_user('user_2', 'paSSWORD2')
