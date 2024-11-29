@@ -424,13 +424,15 @@ def get_entry_id(uid, name, size, supplier):
     except IndexError:
         return None
 
-# if __name__ == "__main__":
-    # try:
-    #     drop_all()
-    # except sqlite3.OperationalError:
-    #     ...
-    # finally:
-    #     import __init__
+if __name__ == "__main__":
+    if input('    > If you proceed the tables will be dropped and regenerated. Proceed (y/n):').lower() == 'y':
+        if input('    > Are you sure? (y/n):').lower() == 'y':
+            try:
+                drop_all()
+            except sqlite3.OperationalError:
+                ...
+            finally:
+                import __init__
 
     # set_user('user_1', 'password1')
     # set_user('user_2', 'paSSWORD2')
