@@ -473,15 +473,15 @@ def transactions():
     if request.method == 'GET':
         try:
             quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
-            pending_transactions: list[dict] = db.get_pending_transactions(session.get('UID')) # TO
+            has_to_answer, waits_for_answer = db.get_pending_transactions(session.get('UID')) # TO
         except Exception as e:
             print(e)
             flash('Error occurred while retrieving transaction data.')
             print('Error occurred while retrieving transaction data.')
             return redirect(url_for('transactions'))
         
-        return render_template('transactions.html', pending_transactions= pending_transactions,
-                        quick_switch_users= quick_switch_users)
+        return render_template('transactions.html', has_to_answer= has_to_answer,
+                        waits_for_answer= waits_for_answer, quick_switch_users= quick_switch_users)
 
     elif request.method == 'POST':
         # Check quick switch or add new quick switch user
@@ -492,11 +492,11 @@ def transactions():
             return redirect(url_for('inventory'))
         
         # New transaction to be made
-        if request.form.get('startTransaction') is not None:
+        if request.form.get('submitTransaction') is not None:
             to_user: str = request.form.get('to_user')
             # Receiving user does not exist.
             try:
-                if not (to_UID := db.user_exists(to_user)):
+                if not db.user_exists(to_user):
                     flash('User does not exist.')
                     return redirect(url_for('transactions'))
             except Exception as e:
@@ -506,20 +506,20 @@ def transactions():
                 return redirect(url_for('transactions'))
 
             item_UID: str = request.form.get('item_uid')
-            quantity: str = request.form.get('quantity')
             try:
-                if int(quantity) < 0:
-                    flash('Invalid quantity value.')
-                    print('Invalid quantity value.')
-                    return redirect(url_for('transactions'))
+                quantity: int = int(request.form.get('quantity'))
+                type: int = int(request.form.get('requestType'))
+                quantity *= type
             except ValueError:
-                flash('Invalid quantity value.')
-                print('Invalid quantity value.')
+                flash('Invalid request type or quantity.')
+                print('Invalid request type or quantity.')
                 return redirect(url_for('transactions'))
 
             # Add the transaction to pending transactions
+            to_user = db.get_user_uid(to_user)
+            print(item_UID, to_user, quantity)
             try:
-                db.addTransaction(session.get('UID'), to_UID, item_UID, quantity) # TO
+                db.add_transaction(session.get('UID'), to_user, item_UID, quantity) # TO
             except Exception as e:
                 print(e)
                 flash('Error occurred while adding transaction.')
@@ -531,11 +531,25 @@ def transactions():
 
         # To answer to transaction
         if request.form.get('answerTransaction') is not None:
-            transaction_id: str = request.form.get('transaction_id')
+            # Check which button was pressed
+            for key in request.form.keys():
+                if key.startswith('accept_'):
+                    transaction_id = key.split('_')[1]  # Extract the transaction ID
+                    answer = True
+                    break
+                elif key.startswith('reject_'):
+                    transaction_id = key.split('_')[1]  # Extract the transaction ID
+                    answer = False
+                    break
+            else:
+                flash('Error while answering to the tranasction.')
+                print('Error while answering to the tranasction.')
+                return redirect(url_for('transactions'))
+            
             try:
                 if not db.transaction_exists(transaction_id):
                     flash('Transaction does not exist.')
-                    print('Transaction does not exist')
+                    print('Transaction does not exist.')
                     return redirect(url_for('transactions'))
             except Exception as e:
                 print(e)
@@ -543,24 +557,21 @@ def transactions():
                 print('Error occurred while checking transaction existence.')
                 return redirect(url_for('transactions'))
             
-            try:
-                answer: bool = bool(int(request.form.get('answer')))
-            except ValueError:
-                flash('Invalid answer value.')
-                print('Invalid answer value.')
-                return redirect(url_for('transactions'))
-            
             # Update the transaction in pending transactions
             try:
                 db.answer_transaction(transaction_id, answer) # TO
+            except ValueError:
+                flash("Value bigger than quantity in stock!")
+                print("Value bigger than quantity in stock!")
+                return redirect(url_for('transactions'))
             except Exception as e:
                 print(e)
                 flash('Error occurred while updating the transaction.')
                 print('Error occurred while updating the transaction.')
                 return redirect(url_for('transactions'))
             
-            flash('Transaction answer submitted successfully.')
-            print('Transaction answer submitted successfully.')
+            flash('Transaction answered successfully.')
+            print('Transaction answered successfully.')
             return redirect(url_for('transactions'))
 
         return redirect(url_for('transactions'))
@@ -585,6 +596,7 @@ def bulkIncrease():
         for rem_item in to_be_added_items:
            temp: dict = db.get_entry(session['UID'], rem_item['entry_id'])[0]
            temp['quantity_difference'] = rem_item['quantity']
+           temp.pop('category')
            x.append(temp)
 
         return render_template('bulkIncrease.html', quick_switch_users= quick_switch_users, to_be_added_items= x)
@@ -614,6 +626,11 @@ def bulkIncrease():
 
         # Check if the submit button was pressed
         if 'submitBulkIncrease' in request.form:
+            if to_be_added_items == []:
+                flash('No items selected for bulk increase.')
+                print('No items selected for bulk increase.')
+                return redirect(url_for('bulkIncrease'))
+            
             # Retrieve the submitted products and quantities
             product_uids = [item['entry_id'] for item in to_be_added_items]
             product_quantities = [item['quantity'] for item in to_be_added_items]
@@ -655,6 +672,7 @@ def bulkDecrease():
         for rem_item in to_be_removed_items:
            temp: dict = db.get_entry(session['UID'], rem_item['entry_id'])[0]
            temp['quantity_difference'] = rem_item['quantity']
+           temp.pop('category')
            x.append(temp)
 
         return render_template('bulkDecrease.html', quick_switch_users= quick_switch_users, to_be_removed_items= x)
@@ -680,13 +698,20 @@ def bulkDecrease():
                 'quantity': quantity,
             }
             to_be_removed_items.append(item)
+            
             return redirect(url_for('bulkDecrease'))
 
         # Check if the submit button was pressed
         if 'submitBulkDecrease' in request.form:
+            if to_be_removed_items == []:
+                flash('No items selected for bulk decrease.')
+                print('No items selected for bulk decrease.')
+                return redirect(url_for('bulkDecrease'))
+
             # Retrieve the submitted products and quantities
             product_uids = [item['entry_id'] for item in to_be_removed_items]
             product_quantities = [item['quantity'] for item in to_be_removed_items]
+            not_enough_stock_happened: bool = False
 
             # Process each product with its quantity
             for product_uid, quantity in zip(product_uids, product_quantities):
@@ -696,7 +721,8 @@ def bulkDecrease():
                         # Check if the quantity is greater than the decrease quantity.
                         qnt = db.get_quantity(product_uid)
                         if qnt < int(quantity):
-                            flash('Not enough stock for product: {product_uid}')
+                            flash(f'Not enough stock for product: {product_uid}')
+                            not_enough_stock_happened = True
                             continue
                         db.decrease_quantity(product_uid, int(quantity))
                     except Exception as e:
@@ -704,12 +730,17 @@ def bulkDecrease():
                         flash(f'Error decreasing quantity for product: {product_uid}')
                         print(f'Error decreasing quantity for product: {product_uid}')
 
+            if not_enough_stock_happened and len(to_be_removed_items) > 1:
+                flash('Bulk decrease successful for the rest!')
+                print('Bulk decrease successful for the rest!')
+            else:
+                flash('Bulk decrease successful!')
+                print('Bulk decrease successful!')
+
             to_be_removed_items = [] # discard items
-            flash('Bulk decrease successful!')
-            print('Bulk decrease successful!')
             return redirect(url_for('inventory'))
 
         return redirect(url_for('bulkDecrease')) 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000, host='0.0.0.0')

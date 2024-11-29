@@ -13,7 +13,6 @@ function toggleDropdown(event) {
     }
 }
 
-
 function toggleUserDropdown(event) {
     event.preventDefault();
     const parent = event.target.closest('.user-dropdown');
@@ -31,6 +30,7 @@ document.querySelectorAll('.dropdown a').forEach(link => {
     });
 });
 
+// Search bar
 function performSearch() {
     const query = document.getElementById('searchBar').value.trim(); // Get the search query
     
@@ -52,7 +52,7 @@ function performSearch() {
                 data.forEach(item => {
                     dropdown.append(`
                         <div onclick="selectItem('${item.entry_id}')">
-                            | ${item.name.toUpperCase()} ${item.size}ml ${item.supplier}
+                            | ${item.name.toUpperCase()} ${item.size}mL ${item.supplier}
                         </div>
                     `);
                 });
@@ -243,7 +243,7 @@ function performSearchBulk() {
                 data.forEach(item => {
                     dropdown.append(`
                         <div onclick="selectItemBulk('${item.entry_id}')">
-                            | ${item.name.toUpperCase()} ${item.size}ml ${item.supplier}
+                            | ${item.name.toUpperCase()} ${item.size}mL ${item.supplier}
                         </div>
                     `);
                 });
@@ -283,7 +283,7 @@ function removeDrinkD(entry_id) {
 function removeDrinkI(entry_id) {
     // Make the POST request to remove the item
     $.ajax({
-        url: '/removeDecrease', // Backend endpoint for removing the item
+        url: '/removeIncrease', // Backend endpoint for removing the item
         method: 'POST',
         data: { entry_id: entry_id }, // Send the entry ID
         success: function (response) {
@@ -296,4 +296,61 @@ function removeDrinkI(entry_id) {
             console.error('Error:', xhr.responseText);
         }
     });
+}
+
+function changeQuantityTemp(button, change) {
+    const quantitySpan = button.parentElement.querySelector('.quantity-value');
+    let currentQuantity = parseInt(quantitySpan.textContent, 10);
+    currentQuantity = Math.max(0, currentQuantity + change); // Prevent negative values
+    quantitySpan.textContent = currentQuantity;
+    document.getElementById('quantity').value = currentQuantity;
+}
+
+function performSearchTra() {
+    const query = document.getElementById('searchBar').value.trim(); // Get the search query
+    
+    if (query.length === 0) {
+        $('#searchDropdown').hide(); // Hide dropdown if query is empty
+        return;
+    }
+
+    $.ajax({
+        url: '/search',
+        method: 'GET',
+        data: { query: query },
+        success: function(data) {
+            const dropdown = $('#searchDropdown');
+            dropdown.empty(); // Clear previous results
+            if (data.length === 0) {
+                dropdown.append('<div>No matching items found.</div>');
+            } else {
+                data.forEach(item => {
+                    size = item.size;
+                    size_str = size >= 1000 ? (size/1000)+'L' : size+'mL'; // Format size for display
+                    dropdown.append(`
+                        <div onclick="selectItemTra('${item.entry_id}', '${item.name}', '${item.size}', '${item.supplier}')">
+                            | ${item.name.toUpperCase()} ${size_str} ${item.supplier}
+                        </div>
+                    `);
+                });
+            }
+            dropdown.show(); // Show dropdown
+        },
+        error: function() {
+            alert('An error occurred while searching. Please try again.');
+        }
+    });    
+}
+
+function empty(){
+    document.getElementById('searchBar').value = ''; // Clear the search bar
+    $('#searchDropdown').hide(); // Hide the dropdown
+}
+
+function selectItemTra(entry_id, name, size, supplier) {
+    size_str = size >= 1000 ? (size/1000)+'L' : size+'mL';
+    // Populate and open the modal for quantity input
+    document.getElementById('item_uid').value = entry_id; // Set hidden input for entry_id
+    $('#searchDropdown').hide();
+    document.getElementById('searchBar').value = name.toUpperCase() + ' ' + size_str + ' | Supplier: ' + supplier;
 }

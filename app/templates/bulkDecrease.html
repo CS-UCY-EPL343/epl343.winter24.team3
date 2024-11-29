@@ -10,7 +10,7 @@
     <body>
         <!-- Top Bar -->
         <div class="top-bar" id="topBar" name="topBar">
-            <img class="logo" src="..\static\images\logo.jpg" alt="Logo" onclick="toggleSidebar()" />
+            <img class="logo" src="..\static\images\logo.png" alt="Logo" onclick="toggleSidebar()" />
             <div class="title">Trackventory</div>
             <div class="user-actions">
                 <div class="user-dropdown">
@@ -34,11 +34,11 @@
                 <form method="POST">
                     <div>
                         <label for="username">Username</label>
-                        <input type="text" id="addQuickSwitchUser_Username" name="addQuickSwitchUser_Username" placeholder="Enter username">
+                        <input type="text" id="addQuickSwitchUser_Username" name="addQuickSwitchUser_Username" placeholder="Enter username" required>
                     </div>
                     <div>
                         <label for="password">Password</label>
-                        <input type="password" id="addQuickSwitchUser_Password" name="addQuickSwitchUser_Password" placeholder="Enter password">
+                        <input type="password" id="addQuickSwitchUser_Password" name="addQuickSwitchUser_Password" placeholder="Enter password" required>
                     </div>
                     <button type="submit" name="addQuickSwitchUser" value="addQuickSwitchUser">SUBMIT</button>
                 </form>
@@ -68,7 +68,7 @@
                 <form method="post">
                     <div id="entriesBulk" class="entry-list">
                         <div class="entry-list">
-                        {% for entry in to_be_added_items %}
+                        {% for entry in to_be_removed_items %}
                             <div class="inventory-entry" id="{{ entry['entry_id'] }}">
                                 <img src="{{ entry['photo'] or 'static/images/default_bottle.avif' }}" alt="{{ entry['name'] }}" class="entry-image"/>
                                 <div class="entry-details">
@@ -79,7 +79,7 @@
                                             Supplier: {{ entry['supplier'] }} | Quantity To Remove: {{ entry['quantity_difference'] }}
                                         </span>
                                         <div class="drink-actions">
-                                            <button class="quantity-btn" onclick="removeDrinkD('{{ entry['entry_id'] }}')">Remove</button>
+                                            <button class="quantity-btn-blk" onclick="removeDrinkD('{{ entry['entry_id'] }}')">Remove</button>
                                         </div>
                                     </span>
                                 </div>
