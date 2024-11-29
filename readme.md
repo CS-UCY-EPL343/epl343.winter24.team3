@@ -48,6 +48,8 @@ The back end is programmed with the Flask framework. Some javascript-ajax functi
 ### Front End
 The front end used html, css, and little javascript to visualize the idea. Also the jinja2 engine was used to send data from the db to the front end, through the Flask implementation.
 
+### Docker
+The project is dockerized in order to be portable. The functionality does not change, rather it gets better and more stable.
 
 #### TODOs
 Implement colour codes.

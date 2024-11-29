@@ -77,7 +77,6 @@ function selectItem(entry_id) {
                 document.write(response.html);
                 document.close();
             } else if (response.error) {
-                alert('Error: ' + response.error);
             }
         },
         error: function() {

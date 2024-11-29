@@ -159,12 +159,12 @@
                 </div>
             </div>
 
-            {% for x in inventory_data %}
-                <section id="{{ x['category'] }}" class="inventory-section">
-                    <h2>{{ x['category'] }}</h2>
+            {% for category in valid_categories %}
+                <section id="{{ category }}" class="inventory-section">
+                    <h2>{{ category }}</h2>
                     <div class="entry-list">
                     {% for entry in inventory_data %}
-                        {% if entry['category'] == x['category'] %}
+                        {% if entry['category'] == category %}
                             <div class="inventory-entry" data-entry-id="{{ entry['entry_id'] }}">
                                 <img src="{{ entry['photo'] or 'static/images/default_bottle.avif' }}" alt="{{ entry['name'] }}" class="entry-image"/>
                                 <div class="entry-details">
@@ -177,7 +177,7 @@
                                         </span>
                                         <span class="entry-quantity">
                                             <button class="quantity-btn" onclick="changeQuantity(this, -1)">-</button>
-                                            <span class="quantity-value" min="0">{{ entry['qnt'] }}</span>
+                                            <span class="quantity-value" min="0" style="color: {{ entry['color'] }};">{{ entry['qnt'] }}</span>
                                             <button class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
                                         </span>
                                     </span>

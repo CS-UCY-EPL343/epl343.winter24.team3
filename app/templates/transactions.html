@@ -116,8 +116,8 @@
                                     <span class="entry-info">
                                         <span class="entry-text">
                                             <strong class="entry-name">{{ entry['name'] }}</strong>
-                                            {{ entry['size'] ~ ' ML' if 1000 > entry['size'] else (entry['size'] / 1000) ~ ' L' }} | 
-                                            Quantity: {{ entry['qnt'] }} - REQUEST: <strong>{{ entry['qnt_dif'] }}</strong> | TO: <strong>{{ entry['username'] }}</strong>
+                                            {{ entry['size'] ~ ' ML' if 1000 > entry['size'] else (entry['size'] / 1000) ~ ' L' }}
+                                             - REQUEST: <strong>{{ entry['qnt_dif'] }}</strong> | TO: <strong>{{ entry['username'] }}</strong>
                                         </span>
                                     </span>
                                 </div>
@@ -140,8 +140,8 @@
                                     <span class="entry-info">
                                         <span class="entry-text">
                                             <strong class="entry-name">{{ entry['name'] }}</strong>
-                                            {{ entry['size'] ~ ' ML' if 1000 > entry['size'] else (entry['size'] / 1000) ~ ' L' }} | 
-                                            Quantity: {{ entry['qnt'] }} - REQUEST: <strong>{{ entry['qnt_dif']*(-1) }}</strong> | FROM: <strong>{{ entry['username'] }}</strong>
+                                            {{ entry['size'] ~ ' ML' if 1000 > entry['size'] else (entry['size'] / 1000) ~ ' L' }}
+                                             - REQUEST: <strong>{{ entry['qnt_dif']*(-1) }}</strong> | FROM: <strong>{{ entry['username'] }}</strong>
                                         </span>
                                         <form class="drink-actions" name="answerTransaction" method="POST">
                                             <input type="hidden" name="answerTransaction" value="" />
