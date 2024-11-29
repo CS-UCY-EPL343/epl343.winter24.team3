@@ -97,7 +97,7 @@ def removeDecrease():
             to_be_removed_items.remove(item)
 
     try:
-        quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
+        quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID'))
     except Exception as e:
         print(e)
         flash('An error occurred while retrieving data.')
@@ -122,7 +122,7 @@ def removeIncrease():
             to_be_added_items.remove(item)
 
     try:
-        quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
+        quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID'))
     except Exception as e:
         print(e)
         flash('An error occurred while retrieving data.')
@@ -140,7 +140,7 @@ def removeIncrease():
 
 def CheckQuickSwitch() -> bool|str:
     # Check if quick switch is called
-    quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
+    quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID'))
     for user in quick_switch_users:
         if request.form.get(user) == user:
             print('Switching user.')
@@ -160,7 +160,7 @@ def CheckQuickSwitch() -> bool|str:
             # else change the session details
             session['username'] = new_username
             try:
-                session['UID'] = db.get_user_uid(new_username) # TO
+                session['UID'] = db.get_user_uid(new_username)
             except Exception as e:
                 print(e)
                 flash('Error occurred while changing session details.')
@@ -179,7 +179,7 @@ def CheckQuickSwitch() -> bool|str:
 
         # Validate details
         try:
-            if not db.validate_user(new_username, password): # TO
+            if not db.validate_user(new_username, password):
                 flash('Invalid username or password.')
                 print('Invalid username or password.')
                 return True
@@ -191,12 +191,12 @@ def CheckQuickSwitch() -> bool|str:
 
         try:
             # Check if the user already exists in quick switch list
-            if new_username in db.get_quick_switch_users(session.get('UID')): # TO
+            if new_username in db.get_quick_switch_users(session.get('UID')):
                 flash('User already exists in quick switch.')
                 print('User already exists in quick switch.')
             # else add the user to quick switch list
             else:
-                db.add_quick_switch_user(session.get('UID'), new_username) # TO
+                db.add_quick_switch_user(session.get('UID'), new_username)
                 print('Quick switch user added successfully.')
         except Exception as e:
             print(e)
@@ -224,7 +224,7 @@ def login():
         
         # If the credentials are incorrect
         try:
-            if not db.validate_user(username, password): # TO
+            if not db.validate_user(username, password):
                 flash('Invalid username or password.')
                 print('Invalid username or password.')
                 return redirect(url_for('login'))
@@ -263,7 +263,7 @@ def register():
         
         # if username is taken.
         try:
-            if db.user_exists(username): # TO
+            if db.user_exists(username):
                 flash('Username already exists.')
                 print('Username already exists.')
                 return redirect(url_for('register'))
@@ -287,7 +287,7 @@ def register():
         
         # Setting the user
         try:
-            if not db.set_user(username, password): # TO
+            if not db.set_user(username, password):
                 flash('An error has occurred.')
                 print('An error has occurred.')
                 return redirect(url_for('register'))
@@ -316,17 +316,19 @@ def inventory():
     if request.method == 'GET':
         # Have to send the data to the frond
         try:
-            inventory_data: list[dict] = db.get_inventory_data(session.get('UID')) # TO
-            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
-            category_options: list[str] = db.get_category_options(session.get('UID')) # TO
-            supplier_options: list[str] = db.get_supplier_options(session.get('UID')) # TO
+            inventory_data: list[dict] = db.get_inventory_data(session.get('UID'))
+            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID'))
+            category_options: list[str] = db.get_category_options(session.get('UID'))
+            supplier_options: list[str] = db.get_supplier_options(session.get('UID'))
         except:
             flash('An error occurred while retrieving data.')
             print('An error occurred while retrieving data.')
             return redirect(url_for('inventory'))
         
+        # Get the unique categories
+        valid_categories: set = {item['category'] for item in inventory_data}
         return render_template('inventory.html', inventory_data= inventory_data, quick_switch_users= quick_switch_users,
-                                category_options= category_options, supplier_options= supplier_options)
+                        category_options= category_options, supplier_options= supplier_options, valid_categories= valid_categories)
 
     elif request.method == 'POST':
         # Check quick switch or add new quick switch user
@@ -402,7 +404,7 @@ def inventory():
                 print('Invalid quantity value.')
                 return redirect(url_for('inventory'))
             
-            # Update the DB # TO
+            # Update the DB
             try:
                 db.create_entry(session['UID'], item_name, item_size, item_category, item_supplier, item_min_requirement, item_photo, item_quantity)
                 print('Item created successfully.')
@@ -410,7 +412,8 @@ def inventory():
                 print(e)
                 flash('Error occurred while updating entry data.')
                 print('Error occurred while updating entry data.')
-                return redirect(url_for('inventory'))
+
+            return redirect(url_for('inventory'))
 
         # Get the filter values
         category: str = request.form.get('filterCategory', '')
@@ -419,20 +422,21 @@ def inventory():
         if category + supplier + quantity_filter != '':
             try:
                 # Fetch the filtered inventory from the DB
-                filtered_data = db.get_filtered_inventory(session.get('UID'), category, supplier, quantity_filter) # TO # TO # TO # TO
+                filtered_data = db.get_filtered_inventory(session.get('UID'), category, supplier, quantity_filter)
                 # Fetch options from the DB
-                category_options = db.get_category_options(session.get('UID')) # TO
-                supplier_options: list[str] = db.get_supplier_options(session.get('UID')) # TO
-                quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO   
+                category_options = db.get_category_options(session.get('UID'))
+                supplier_options: list[str] = db.get_supplier_options(session.get('UID'))
+                quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID'))   
             except Exception as e:
                 print(e)
                 flash('An error occurred while retrieving data.')
                 print('An error occurred while retrieving data.')
                 return redirect(url_for('inventory'))
                  
-            # Pass the data to the template
+            # Get the unique categories
+            valid_categories: set = {item['category'] for item in filtered_data}
             return render_template('inventory.html', inventory_data=filtered_data, quick_switch_users=quick_switch_users,
-                    category_options=category_options, supplier_options=supplier_options)
+                    category_options=category_options, supplier_options=supplier_options, valid_categories= valid_categories)
 
         return redirect(url_for('inventory'))
 
@@ -444,8 +448,8 @@ def report():
 
     if request.method == 'GET':
         try:
-            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
-            report: list[dict] = db.generate_report(session.get('UID')) # TO
+            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID'))
+            report: list[dict] = db.generate_report(session.get('UID'))
         except Exception as e:
             print(e)
             flash('Error occurred while retrieving report data.')
@@ -472,8 +476,8 @@ def transactions():
 
     if request.method == 'GET':
         try:
-            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
-            has_to_answer, waits_for_answer = db.get_pending_transactions(session.get('UID')) # TO
+            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID'))
+            has_to_answer, waits_for_answer = db.get_pending_transactions(session.get('UID'))
         except Exception as e:
             print(e)
             flash('Error occurred while retrieving transaction data.')
@@ -494,6 +498,10 @@ def transactions():
         # New transaction to be made
         if request.form.get('submitTransaction') is not None:
             to_user: str = request.form.get('to_user')
+            if to_user == session.get('username', '.'):
+                print('You cannot send to yourself.')
+                flash('You cannot send to yourself.')
+                return redirect(url_for('transactions'))
             # Receiving user does not exist.
             try:
                 if not db.user_exists(to_user):
@@ -507,6 +515,7 @@ def transactions():
 
             item_UID: str = request.form.get('item_uid')
             try:
+                current_qnty = db.get_quantity(item_UID)
                 quantity: int = int(request.form.get('quantity'))
                 type: int = int(request.form.get('requestType'))
                 quantity *= type
@@ -514,12 +523,24 @@ def transactions():
                 flash('Invalid request type or quantity.')
                 print('Invalid request type or quantity.')
                 return redirect(url_for('transactions'))
+            except IndexError:
+                flash('No item UID provided.')
+                print('No item UID provided.')
+                return redirect(url_for('transactions'))
+            
+            if -quantity > current_qnty:
+                flash('Insufficient quantity.')
+                print('Insufficient quantity.')
+                return redirect(url_for('transactions'))
 
             # Add the transaction to pending transactions
             to_user = db.get_user_uid(to_user)
-            print(item_UID, to_user, quantity)
             try:
-                db.add_transaction(session.get('UID'), to_user, item_UID, quantity) # TO
+                db.add_transaction(session.get('UID'), to_user, item_UID, quantity)
+            except NameError:
+                print('You cannot send to yourself.')
+                flash('You cannot send to yourself.')
+                return redirect(url_for('transactions'))
             except Exception as e:
                 print(e)
                 flash('Error occurred while adding transaction.')
@@ -559,7 +580,7 @@ def transactions():
             
             # Update the transaction in pending transactions
             try:
-                db.answer_transaction(transaction_id, answer) # TO
+                db.answer_transaction(transaction_id, answer)
             except ValueError:
                 flash("Value bigger than quantity in stock!")
                 print("Value bigger than quantity in stock!")
@@ -585,7 +606,7 @@ def bulkIncrease():
 
     if request.method == 'GET':
         try:
-            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
+            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID'))
         except Exception as e:
             print(e)
             flash('An error occurred while retrieving data.')
@@ -661,7 +682,7 @@ def bulkDecrease():
 
     if request.method == 'GET':
         try:
-            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID')) # TO
+            quick_switch_users: list[str] = db.get_quick_switch_users(session.get('UID'))
         except Exception as e:
             print(e)
             flash('An error occurred while retrieving data.')

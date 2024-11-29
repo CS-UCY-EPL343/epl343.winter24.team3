@@ -2,6 +2,8 @@ import sqlite3
 import hashlib
 import os
 
+COLORS = ['grey', 'red', 'orange', 'black']
+
 def search_inventory(uid, query):
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('./db/epl343.db')
@@ -112,6 +114,19 @@ def get_inventory_data(uid):
     rows = cursor.fetchall()
     connection.close()
     inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8]} for elem in rows]
+    # TO
+    i = 0
+    for entry in inventory:
+        if entry['qnt'] == 0:
+            i = 0
+        elif entry['qnt'] < entry['min_requirement']:
+            i = 1
+        elif entry['qnt'] < entry['min_requirement'] + 5:
+            i = 2
+        else:
+            i = 3
+        entry['color'] = COLORS[i]
+    # TO
     return inventory
 
 def get_entry(uid, entry_id):
@@ -229,6 +244,19 @@ def get_filtered_inventory(uid: int, category: str, supplier: str, qnt_filter: s
 
     finalFilter = [x for x in catFilter if x in supFilter and x in qntFilter]
     inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8]} for elem in finalFilter]
+    # TO
+    i = 0
+    for entry in inventory:
+        if entry['qnt'] == 0:
+            i = 0
+        elif entry['qnt'] < entry['min_requirement']:
+            i = 1
+        elif entry['qnt'] < entry['min_requirement'] + 5:
+            i = 2
+        else:
+            i = 3
+        entry['color'] = COLORS[i]
+    # TO
     return inventory
 
 def generate_report(uid): 
@@ -275,7 +303,7 @@ def get_pending_transactions(uid):
 
 def add_transaction(uid, to_uid, entry_id, qnt): 
     if uid == to_uid:
-        raise ValueError("Can't send transaction request to self!")
+        raise NameError("Can't send transaction request to self!")
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('./db/epl343.db')
     cursor = connection.cursor()
