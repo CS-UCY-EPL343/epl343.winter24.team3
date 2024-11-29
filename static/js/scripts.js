@@ -202,3 +202,5 @@ function saveNewEntry() {
     closeAddEntryModal();
 }
 
+
+
