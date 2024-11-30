@@ -1,0 +1,24 @@
+version: '3.7'
+
+services:
+  web:
+    build: ./app
+    command: flask run --host=0.0.0.0 --port=5000
+    environment: 
+      - FLASK_APP=app.py
+    tty: true
+    volumes:
+      - ./app/:/usr/src/app/
+    ports:
+      - 5000:5000
+    deploy:
+      resources:
+        limits:
+          memory: 1500M
+        reservations:
+          memory: 60M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "30m"
+        max-file: "5"

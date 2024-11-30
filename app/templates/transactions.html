@@ -1,0 +1,184 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Trackventory</title>
+        <link rel="stylesheet" href="..\static\css\styles.css">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    </head>
+    <body>
+        <!-- Top Bar -->
+        <div class="top-bar" id="topBar" name="topBar">
+            <img class="logo" src="..\static\images\logo.png" alt="Logo" onclick="toggleSidebar()" />
+            <div class="title">Trackventory</div>
+            <div class="user-actions">
+                <div class="user-dropdown">
+                    <a class= "switch" onclick="toggleUserDropdown(event)">SWITCH USER</a>
+                    <div class="udropdown">
+                        <form method="POST">
+                            {% for user in quick_switch_users %}
+                                <button class="switchUserButton" type="submit" name="{{ user }}" value="{{ user }}">{{ user }}</button>
+                            {% endfor %}
+                        </form>
+                        <a class="add-user" onclick="openModal('userModal')">+ ADD USER</a>
+                    </div>
+                </div>        
+                <a href="/logout" class="logout">LOG OUT</a>
+            </div>
+        </div>
+        <!-- Add User Modal -->
+        <div class="modal" id="userModal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('userModal')">&times;</span>
+                <form method="POST">
+                    <div>
+                        <label for="username">Username</label>
+                        <input type="text" id="addQuickSwitchUser_Username" name="addQuickSwitchUser_Username" placeholder="Enter username">
+                    </div>
+                    <div>
+                        <label for="password">Password</label>
+                        <input type="password" id="addQuickSwitchUser_Password" name="addQuickSwitchUser_Password" placeholder="Enter password">
+                    </div>
+                    <button type="submit" name="addQuickSwitchUser" value="addQuickSwitchUser">SUBMIT</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar" name="sidebar">
+            <a href="/inventory">INVENTORY</a>
+            <a>TRANSACTIONS</a>
+            <a href="/bulkIncrease">BULK ADDITION</a>
+            <a href="/bulkDecrease">BULK REMOVAL</a>
+            <a href="/report">REPORT</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="transactions-container">
+            <!-- Transaction Box -->
+            <div class="search-filter-container">
+                <button class="add-entry-btn" id="makeRequestButton" onclick="openModal('makeRequestModal')">MAKE REQUEST</button>
+            </div>
+            
+            <!-- Make Requests Modal -->
+            <div id="makeRequestModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('makeRequestModal')">&times;</span>
+                    <h2 style="text-align: center; color: #4a007e;">MAKE REQUEST</h2>
+                    <form id="makeRequestForm" method="post" name="submitTransaction">
+                        <!-- Search Bar -->
+                        <div>
+                            <label for="searchBar">Search Product:</label>
+                            <input type="text" id="searchBar" placeholder="Search a product..." onkeyup="performSearchTra()" onclick="empty()" value="">
+                            <input type="hidden" id="item_uid" name="item_uid" style="display: none;" value="">
+                            <div id="searchDropdown"></div>
+                        </div>
+                        <!-- Username Field -->
+                        <div>
+                            <label for="usernameField">Username to Send To:</label>
+                            <input type="text" id="to_user" name="to_user" placeholder="Enter username...">
+                        </div>
+                        <!-- Request Type Dropdown -->
+                        <div>
+                            <label for="requestType">Request Type:</label>
+                            <select id="requestType" name="requestType">
+                                <option value="1">Requesting</option>
+                                <option value="-1">Sending</option>
+                            </select>
+                        </div>
+                        <!-- Quantity Selector -->
+                        <div>
+                            <label for="quantity">Quantity:</label>
+                            <div class="quantity-container">
+                                <button type="button" class="quantity-btn-rep" onclick="changeQuantityTemp(this, -1)">-</button>
+                                <span class="quantity-value" id="quantitySpan" name="quantitySpan" min="0">1</span>
+                                <button type="button" class="quantity-btn-rep" onclick="changeQuantityTemp(this, 1)">+</button>
+                                <input type="hidden" id="quantity" name="quantity" value="1"/>
+                            </div>
+                        </div>
+                        <!-- Submit Button -->
+                        <button type="submit" name="submitTransaction">SUBMIT</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Pending Outgoing Requests -->
+            {% if waits_for_answer %}
+                <div id="pendingOutgoingRequests" class="inventory-section">
+                    <h2>PENDING OUTGOING REQUESTS</h2>
+                    <div class="entry-list">
+                        {% for entry in waits_for_answer %}
+                            <!-- Existing entries -->
+                            <div id="{{ entry['entry_id'] }}" class="inventory-entry">
+                                <img src="{{ entry['photo'] or 'static/images/default_bottle.avif' }}" alt="{{ entry['name'] }}" class="entry-image">
+                                <div class="entry-details">
+                                    <span class="entry-info">
+                                        <span class="entry-text">
+                                            <strong class="entry-name">{{ entry['name'] }}</strong>
+                                            {{ entry['size'] ~ ' ML' if 1000 > entry['size'] else (entry['size'] / 1000) ~ ' L' }}
+                                             - REQUEST: <strong>{{ entry['qnt_dif'] }}</strong> | TO: <strong>{{ entry['username'] }}</strong>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Pending Incoming Requests -->
+            {% if has_to_answer %}
+                <div id="pendingIncomingRequests" class="inventory-section">
+                    <h2>PENDING INCOMING REQUESTS</h2>
+                    <div class="entry-list">
+                        {% for entry in has_to_answer %}
+                            <!-- Existing entries -->
+                            <div id="{{ entry['entry_id'] }}" class="inventory-entry">
+                                <img src="{{ entry['photo'] or 'static/images/default_bottle.avif' }}" alt="{{ entry['name'] }}" class="entry-image">
+                                <div class="entry-details">
+                                    <span class="entry-info">
+                                        <span class="entry-text">
+                                            <strong class="entry-name">{{ entry['name'] }}</strong>
+                                            {{ entry['size'] ~ ' ML' if 1000 > entry['size'] else (entry['size'] / 1000) ~ ' L' }}
+                                             - REQUEST: <strong>{{ entry['qnt_dif']*(-1) }}</strong> | FROM: <strong>{{ entry['username'] }}</strong>
+                                        </span>
+                                        <form class="drink-actions" name="answerTransaction" method="POST">
+                                            <input type="hidden" name="answerTransaction" value="" />
+                                            <button class="quantity-btn-blk" name="accept_{{ entry['trans_id'] }}">ACCEPT</button>
+                                            <button class="quantity-btn-blk" name="reject_{{ entry['trans_id'] }}">REJECT</button>
+                                        </form>
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Flash Modal -->
+        {% if get_flashed_messages() %}
+            <div id="flashModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeFlashModal()">&times;</span>
+                    <p id="flashMessage">{{ get_flashed_messages()[0] }}</p>
+                </div>
+            </div>
+        {% endif %}
+        <!-- Link to JavaScript File -->
+        <script src="..\static\js\scripts.js"></script>
+        <!-- Flash message logic -->
+        <script>
+            // Close the flash modal
+            function closeFlashModal() {
+                document.getElementById("flashModal").style.display = "none";
+            }
+
+            // Automatically show the flash modal if the flash message exists
+            {% if get_flashed_messages() %}
+                document.getElementById("flashModal").style.display = "block";
+            {% endif %}
+        </script>
+    </body>
+</html>

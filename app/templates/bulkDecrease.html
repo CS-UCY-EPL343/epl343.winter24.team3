@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Trackventory</title>
+        <link rel="stylesheet" href="..\static\css\styles.css">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    </head>
+    <body>
+        <!-- Top Bar -->
+        <div class="top-bar" id="topBar" name="topBar">
+            <img class="logo" src="..\static\images\logo.png" alt="Logo" onclick="toggleSidebar()" />
+            <div class="title">Trackventory</div>
+            <div class="user-actions">
+                <div class="user-dropdown">
+                    <a class= "switch" onclick="toggleUserDropdown(event)">SWITCH USER</a>
+                    <div class="udropdown">
+                        <form method="POST">
+                            {% for user in quick_switch_users %}
+                                <button class="switchUserButton" type="submit" name="{{ user }}" value="{{ user }}">{{ user }}</button>
+                            {% endfor %}
+                        </form>
+                        <a class="add-user" onclick="openModal('userModal')">+ ADD USER</a>
+                    </div>
+                </div>        
+                <a href="/logout" class="logout">LOG OUT</a>
+            </div>
+        </div>
+        <!-- Add User Modal -->
+        <div class="modal" id="userModal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('userModal')">&times;</span>
+                <form method="POST">
+                    <div>
+                        <label for="username">Username</label>
+                        <input type="text" id="addQuickSwitchUser_Username" name="addQuickSwitchUser_Username" placeholder="Enter username" required>
+                    </div>
+                    <div>
+                        <label for="password">Password</label>
+                        <input type="password" id="addQuickSwitchUser_Password" name="addQuickSwitchUser_Password" placeholder="Enter password" required>
+                    </div>
+                    <button type="submit" name="addQuickSwitchUser" value="addQuickSwitchUser">SUBMIT</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar" name="sidebar">
+            <a href="/inventory">INVENTORY</a>
+            <a href="/transactions">TRANSACTIONS</a>
+            <a href="/bulkIncrease">BULK ADDITION</a>
+            <a>BULK REMOVAL</a>
+            <a href="/report">REPORT</a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="bulk-container">
+            <!-- Search Bar -->
+            <div class="search-bar-container">
+                <input type="text" id="searchBar" placeholder="Search a product..." onkeyup="performSearchBulk()">
+                <div id="searchDropdown" class="dropdown-list"></div>
+            </div>
+        
+            <!-- Bulk Addition Section -->
+            <div id="selectedDrinksList" class="inventory-section">
+                <h2>PRODUCTS TO DECREASE IN INVENTORY</h2>
+                <form method="post">
+                    <div id="entriesBulk" class="entry-list">
+                        <div class="entry-list">
+                        {% for entry in to_be_removed_items %}
+                            <div class="inventory-entry" id="{{ entry['entry_id'] }}">
+                                <img src="{{ entry['photo'] or 'static/images/default_bottle.avif' }}" alt="{{ entry['name'] }}" class="entry-image"/>
+                                <div class="entry-details">
+                                    <span class="entry-info">
+                                        <span class="entry-text">
+                                            <strong class="entry-name">{{ entry['name'] }}</strong>
+                                            {{ entry['size'] ~ ' ML' if 1000 > entry['size'] else (entry['size'] / 1000) ~ ' L' }} | 
+                                            Supplier: {{ entry['supplier'] }} | Quantity To Remove: {{ entry['quantity_difference'] }}
+                                        </span>
+                                        <div class="drink-actions">
+                                            <button class="quantity-btn-blk" onclick="removeDrinkD('{{ entry['entry_id'] }}')">Remove</button>
+                                        </div>
+                                    </span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button class="submit-btn" id="submitBulkDecrease" name="submitBulkDecrease" onclick="submitDecrement()">SUBMIT</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Quantity Input Modal -->
+        <div id="quantityModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('quantityModal')">&times;</span>
+                <form id="quantityForm" method="post">
+                    <input type="hidden" id="selectedEntryID" name="entry_id">
+                    <div>
+                        <label for="quantityInput">Quantity To Remove:</label>
+                        <input type="number" id="quantityInput" name="quantity" min="1" required>
+                    </div>
+                    <button type="submit" id="addBulkDecrease" name="addBulkDecrease">Submit</button>
+                </form>
+            </div>
+        </div>
+        
+
+        <!-- Flash Modal -->
+        {% if get_flashed_messages() %}
+            <div id="flashModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeFlashModal()">&times;</span>
+                    <p id="flashMessage">{{ get_flashed_messages()[0] }}</p>
+                </div>
+            </div>
+        {% endif %}
+        <!-- Link to JavaScript File -->
+        <script src="..\static\js\scripts.js"></script>
+        <!-- Flash message logic -->
+        <script>
+            // Close the flash modal
+            function closeFlashModal() {
+                document.getElementById("flashModal").style.display = "none";
+            }
+
+            // Automatically show the flash modal if the flash message exists
+            {% if get_flashed_messages() %}
+                document.getElementById("flashModal").style.display = "block";
+            {% endif %}
+        </script>
+    </body>
+</html>

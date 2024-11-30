@@ -2,6 +2,8 @@ import sqlite3
 import hashlib
 import os
 
+COLORS = ['grey', 'red', 'orange', 'black']
+
 def search_inventory(uid, query):
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('./db/epl343.db')
@@ -11,7 +13,7 @@ def search_inventory(uid, query):
     cursor.execute(searchInv, (uid, '%' + query + '%'))
     rows = cursor.fetchall()
     connection.close()
-    inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8], "unavailable" : elem[9]} for elem in rows]
+    inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8]} for elem in rows]
     return inventory    
 
 def get_quick_switch_users(uid: int) -> list[str]:
@@ -68,7 +70,7 @@ def add_quick_switch_user(uid: int, new_username: str):
     # > create cursor to access the db.
     cursor = connection.cursor()
     newQSuser = """INSERT INTO QUICK_ACCESS (UID, UID_OTHER) VALUES (?, ?)"""
-    cursor.execute(newQSuser, (uid, new_uid[0]))
+    cursor.execute(newQSuser, (uid, new_uid))
     connection.commit()
     connection.close()
 
@@ -111,7 +113,32 @@ def get_inventory_data(uid):
     cursor.execute(getInv, (uid,))
     rows = cursor.fetchall()
     connection.close()
-    inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8], "unavailable" : elem[9]} for elem in rows]
+    inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8]} for elem in rows]
+    # TO
+    i = 0
+    for entry in inventory:
+        if entry['qnt'] == 0:
+            i = 0
+        elif entry['qnt'] < entry['min_requirement']:
+            i = 1
+        elif entry['qnt'] < entry['min_requirement'] + 5:
+            i = 2
+        else:
+            i = 3
+        entry['color'] = COLORS[i]
+    # TO
+    return inventory
+
+def get_entry(uid, entry_id):
+    # > connect if db exist - create if database doesn't.
+    connection = sqlite3.connect('./db/epl343.db')
+    # > create cursor to access the db.
+    cursor = connection.cursor()
+    getInv = """SELECT * FROM ENTRY WHERE UID = (?) AND ENTRY_ID = (?)"""
+    cursor.execute(getInv, (uid, entry_id))
+    rows = cursor.fetchall()
+    connection.close()
+    inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8]} for elem in rows]
     return inventory
 
 def get_category_options(uid: int) -> list[str]: 
@@ -138,29 +165,45 @@ def get_supplier_options(uid: int) -> list[str]:
     suppliers = [elem[0] for elem in rows]
     return suppliers
 
-def update_entry(entry_id, name, size, category, supplier, minreq, photo, qnt, unav): 
+def update_quantity(entry_id, quantity):
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('./db/epl343.db')
     cursor = connection.cursor()
     old_qnt = get_quantity(entry_id)
-    updEntry = """UPDATE ENTRY SET NAME = (?), SIZE = (?), CATEGORY = (?), SUPPLIER = (?), MIN_REQUIREMENT = (?), PHOTO = (?), QNT = (?), UNAVAILABLE = (?) WHERE ENTRY_ID = (?)"""
-    cursor.execute(updEntry, (name, size, category, supplier, minreq, photo, qnt, unav, entry_id))
+    updEntry = """UPDATE ENTRY SET QNT = (?) WHERE ENTRY_ID = (?)"""
+    cursor.execute(updEntry, (quantity, entry_id))
+    connection.commit()
+    connection.close()
+    if old_qnt != quantity:
+        add_log_ent(entry_id, (quantity - old_qnt))
+
+def update_entry(entry_id, name, size, category, supplier, minreq, photo, qnt=None): 
+    # > connect if db exist - create if database doesn't.
+    connection = sqlite3.connect('./db/epl343.db')
+    cursor = connection.cursor()
+    if qnt is None:
+        qnt = get_quantity(entry_id)
+    old_qnt = get_quantity(entry_id)
+    updEntry = """UPDATE ENTRY SET NAME = (?), SIZE = (?), CATEGORY = (?), SUPPLIER = (?), MIN_REQUIREMENT = (?), PHOTO = (?), QNT = (?) WHERE ENTRY_ID = (?)"""
+    cursor.execute(updEntry, (name, size, category, supplier, minreq, photo, qnt, entry_id))
     connection.commit()
     connection.close()
     if old_qnt != qnt:
         add_log_ent(entry_id, (qnt - old_qnt))
 
-def create_entry(name, size, category, supplier, minreq, photo, qnt, uid):
+def create_entry(uid, name, size, category, supplier, minreq, photo, qnt):
     try:
+        category = category.upper()
         # > connect if db exist - create if database doesn't.
         connection = sqlite3.connect('./db/epl343.db')
         cursor = connection.cursor()
-        createEntry = """INSERT INTO ENTRY (NAME, SIZE, CATEGORY, SUPPLIER, MIN_REQUIREMENT, PHOTO, QNT, UNAVAILABLE, UID) VALUES (?, ?, ?, ?, ?, ?, ?, 'F', ?)"""
+        createEntry = """INSERT INTO ENTRY (NAME, SIZE, CATEGORY, SUPPLIER, MIN_REQUIREMENT, PHOTO, QNT, UID) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"""
         cursor.execute(createEntry, (name, size, category, supplier, minreq, photo, qnt, uid))
         connection.commit()
         connection.close()
-    except:
-        return
+    except Exception as e:
+        print(e)
+        raise Exception(e)
 
 def get_filtered_inventory(uid: int, category: str, supplier: str, qnt_filter: str) -> list[str]: 
     # > connect if db exist - create if database doesn't.
@@ -170,7 +213,6 @@ def get_filtered_inventory(uid: int, category: str, supplier: str, qnt_filter: s
     getAll = """SELECT * FROM ENTRY WHERE UID = (?)"""
     filterCat = """SELECT * FROM ENTRY WHERE UID = (?) AND CATEGORY = (?)"""
     filterSup = """SELECT * FROM ENTRY WHERE UID = (?) AND SUPPLIER = (?)"""
-    filterUnav = """SELECT * FROM ENTRY WHERE UID = (?) AND UNAVAILABLE = 'T'"""
     filterZero = """SELECT * FROM ENTRY WHERE UID = (?) AND QNT = 0"""
     filterBelowMin = """SELECT * FROM ENTRY WHERE UID = (?) AND (QNT<MIN_REQUIREMENT)"""
     filterCloseToMin = """SELECT * FROM ENTRY WHERE UID = (?) AND (QNT>MIN_REQUIREMENT) AND (QNT<=MIN_REQUIREMENT+5)"""
@@ -190,8 +232,6 @@ def get_filtered_inventory(uid: int, category: str, supplier: str, qnt_filter: s
 
     if qnt_filter == '':
         cursor.execute(getAll, (uid,))
-    elif qnt_filter == 'unavailable':
-        cursor.execute(filterUnav, (uid,))
     elif qnt_filter == 'zero':
         cursor.execute(filterZero, (uid,))
     elif qnt_filter == 'below_minimum':
@@ -203,7 +243,20 @@ def get_filtered_inventory(uid: int, category: str, supplier: str, qnt_filter: s
     qntFilter = cursor.fetchall()
 
     finalFilter = [x for x in catFilter if x in supFilter and x in qntFilter]
-    inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8], "unavailable" : elem[9]} for elem in finalFilter]
+    inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8]} for elem in finalFilter]
+    # TO
+    i = 0
+    for entry in inventory:
+        if entry['qnt'] == 0:
+            i = 0
+        elif entry['qnt'] < entry['min_requirement']:
+            i = 1
+        elif entry['qnt'] < entry['min_requirement'] + 5:
+            i = 2
+        else:
+            i = 3
+        entry['color'] = COLORS[i]
+    # TO
     return inventory
 
 def generate_report(uid): 
@@ -211,15 +264,15 @@ def generate_report(uid):
     connection = sqlite3.connect('./db/epl343.db')
     cursor = connection.cursor()
     report = """
-    SELECT E.*, SUM(L.QNT_DIF) 
-    FROM ENTRY E LEFT OUTER JOIN LOG L ON E.ENTRY_ID = L.ENTRY_ID
-    AND L.UID = (?) AND L.DATE_TIME <= datetime('now', 'localtime') AND L.DATE_TIME >= datetime('now','-7 days', 'localtime')
+    SELECT E.*, SUM(L.QNT_DIF)
+    FROM ENTRY E JOIN LOG L ON E.ENTRY_ID = L.ENTRY_ID
+    AND E.UID = (?) AND L.DATE_TIME <= datetime('now', 'localtime') AND L.DATE_TIME >= datetime('now','-7 days', 'localtime')
     GROUP BY L.ENTRY_ID
     ORDER BY E.ENTRY_ID"""
     cursor.execute(report, (uid,))
     rows = cursor.fetchall()
     connection.close()
-    logs = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8], "unavailable" : elem[9], "qnt_dif" : elem[10] if elem[10] is not None else 0} for elem in rows]
+    logs = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8], "qnt_dif" : elem[9] if elem[9] is not None else 0} for elem in rows]
     return logs
 
 def get_pending_transactions(uid):
@@ -228,19 +281,29 @@ def get_pending_transactions(uid):
     # > create cursor to access the db.
     cursor = connection.cursor()
     pendingTrans = """
-    SELECT E.*, U.USERNAME, P.QNT
+    SELECT E.*, U.USERNAME, P.QNT, P.TRANS_ID
     FROM (ENTRY E JOIN PENDING_TRANSACTIONS P ON E.ENTRY_ID = P.ENTRY_ID AND P.UID_ANS_TRANS = (?))
     JOIN USER U ON P.UID_REQ_TRANS = U.UID"""
     cursor.execute(pendingTrans, (uid,))
     rows = cursor.fetchall()
-    connection.close()
     #return rows
-    transactions = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8], "unavailable" : elem[9], "username" : elem[10], "qnt_dif" : elem[11]} for elem in rows]
-    return transactions
+    has_to_answer = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8], "username" : elem[9], "qnt_dif" : elem[10], "trans_id": elem[11]} for elem in rows]
+    
+    pendingTrans = """
+    SELECT E.*, U.USERNAME, P.QNT
+    FROM (ENTRY E JOIN PENDING_TRANSACTIONS P ON E.ENTRY_ID = P.ENTRY_ID AND P.UID_REQ_TRANS = (?))
+    JOIN USER U ON P.UID_ANS_TRANS = U.UID"""
+    cursor.execute(pendingTrans, (uid,))
+    rows = cursor.fetchall()
+    #return rows
+    waits_for_answer = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8], "username" : elem[9], "qnt_dif" : elem[10]} for elem in rows]
+    
+    connection.close()
+    return has_to_answer, waits_for_answer
 
 def add_transaction(uid, to_uid, entry_id, qnt): 
     if uid == to_uid:
-        raise ValueError("Can't send transaction request to self!")
+        raise NameError("Can't send transaction request to self!")
     # > connect if db exist - create if database doesn't.
     connection = sqlite3.connect('./db/epl343.db')
     cursor = connection.cursor()
@@ -283,12 +346,21 @@ def answer_transaction(trans_id, answer):
         getAnsEid = """SELECT A.ENTRY_ID FROM ENTRY A, ENTRY R WHERE R.ENTRY_ID = (?) AND A.UID = (?) AND R.UID = (?) AND A.NAME = R.NAME AND A.SIZE = R.SIZE"""
         cursor.execute(getAnsEid, (entry_id_req, uidAns, uidReq))
         values = cursor.fetchall()
+        if values == [] and qnt < 0:
+            entry = get_entry(uidReq, entry_id_req)[0]
+            create_entry(uidAns, entry['name'], entry['size'], entry['category'], entry['supplier'], entry['min_requirement'], entry['photo'], 0)
+            cursor.execute(getAnsEid, (entry_id_req, uidAns, uidReq))
+            values = cursor.fetchall()
+        elif values == [] and qnt > 0:
+            raise ValueError("You dont have enough stock!")
+
         try:
             entry_id_ans = values[0][0]
         except ValueError:
             return
         decrease_quantity(entry_id_ans, qnt)
         increase_quantity(entry_id_req, qnt)
+
     delTrans = """DELETE FROM PENDING_TRANSACTIONS WHERE TRANS_ID = (?)"""
     cursor.execute(delTrans, (trans_id,))
     connection.commit()
@@ -333,7 +405,6 @@ def get_quantity(entry_id):
         connection.close()
         return qnt[0][0]
     except IndexError:
-        print("🐍 File: db/db.py | Line: 301 | get_quantity ~ entry_id:", entry_id) # TO
         raise IndexError
 
 def add_log_ent(entry_id, qnt_dif):
@@ -382,40 +453,42 @@ def get_entry_id(uid, name, size, supplier):
         return None
 
 if __name__ == "__main__":
-    try:
-        drop_all()
-    except sqlite3.OperationalError:
-        ...
-    finally:
-        import __init__
+    if input('    > If you proceed the tables will be dropped and regenerated. Proceed (y/n):').lower() == 'y':
+        if input('    > Are you sure? (y/n):').lower() == 'y':
+            try:
+                drop_all()
+            except sqlite3.OperationalError:
+                ...
+            finally:
+                import __init__
 
-    set_user('user_1', 'password1')
-    set_user('user_2', 'paSSWORD2')
-    uid1 = get_user_uid('user_1')
-    uid2 = get_user_uid('user_2')
-    create_entry('poto', 1000, 'vodka', 'maria', 10, '', 100, uid1)
-    create_entry('poto', 1000, 'vodka', 'giorkos', 10, '', 100, uid2)
-    create_entry('poto', 500, 'vodka', 'marios', 10, '', 100, uid1)
-    create_entry('poto', 500, 'vodka', 'giorkos', 10, '', 100, uid1)
-    create_entry('allo_poto', 1000, 'gin', 'giorkos', 10, '', 100, uid1)
-    add_transaction(uid1, uid2, 1, 10)
-    add_transaction(uid2, uid1, 2, 20)
-    add_transaction(uid1, uid2, 4, 100)
-    for item in get_pending_transactions(uid1):
-        print(item)
-    """print(get_inventory_data(uid1))
-    print('\n')
-    print(generate_report(uid1))
+    # set_user('user_1', 'password1')
+    # set_user('user_2', 'paSSWORD2')
+    # uid1 = get_user_uid('user_1')
+    # uid2 = get_user_uid('user_2')
+    # create_entry(uid1, 'poto', 1000, 'vodka', 'maria', 10, '', 100)
+    # create_entry(uid2, 'poto', 1000, 'vodka', 'giorkos', 10, '', 100)
+    # create_entry(uid1, 'poto', 500, 'vodka', 'marios', 10, '', 100)
+    # create_entry(uid1, 'poto', 500, 'vodka', 'giorkos', 10, '', 100)
+    # create_entry(uid2, 'allo_poto', 1000, 'gin', 'giorkos', 10, '', 100)
+    # add_transaction(uid1, uid2, 1, 10)
+    # add_transaction(uid2, uid1, 2, 20)
+    # add_transaction(uid1, uid2, 4, 100)
+    # for item in get_pending_transactions(uid1):
+    #     print(item)
+    # print(get_inventory_data(uid1))
+    # print('\n')
+    # print(generate_report(uid1))
     
-    print(get_inventory_data(uid1))
-    print('\n')
-    update_entry(1, 'poto', 1000, 'vodka', 'maria', 10, '', 0, 'F')
-    print(get_filtered_inventory(uid1, '', '', 'zero'))
-    print('\n')
-    print(get_filtered_inventory(uid1, 'gin', '', ''))
-    print('\n')
-    print(get_pending_transactions(uid1))
-    print('\n')
-    print(get_pending_transactions(uid2))
-    print('\n')"""
+    # print(get_inventory_data(uid1))
+    # print('\n')
+    # update_entry(1, 'poto', 1000, 'vodka', 'maria', 10, '', 0, 'F')
+    # print(get_filtered_inventory(uid1, '', '', 'zero'))
+    # print('\n')
+    # print(get_filtered_inventory(uid1, 'gin', '', ''))
+    # print('\n')
+    # print(get_pending_transactions(uid1))
+    # print('\n')
+    # print(get_pending_transactions(uid2))
+    # print('\n')
 

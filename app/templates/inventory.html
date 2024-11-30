@@ -1,0 +1,258 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Trackventory</title>
+        <link rel="stylesheet" href="..\static\css\styles.css">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    </head>
+    <body>
+        <!-- Top Bar -->
+        <div class="top-bar" id="topBar" name="topBar">
+            <img class="logo" src="..\static\images\logo.png" alt="Logo" onclick="toggleSidebar()" />
+            <div class="title">Trackventory</div>
+            <div class="user-actions">
+                <div class="user-dropdown">
+                    <a class= "switch" onclick="toggleUserDropdown(event)">SWITCH USER</a>
+                    <div class="udropdown">
+                        <form method="POST">
+                            {% for user in quick_switch_users %}
+                                <button class="switchUserButton" type="submit" name="{{ user }}" value="{{ user }}">{{ user }}</button>
+                            {% endfor %}
+                        </form>
+                        <a class="add-user" onclick="openModal('userModal')">+ ADD USER</a>
+                    </div>
+                </div>        
+                <a href="/logout" class="logout">LOG OUT</a>
+            </div>
+        </div>
+        <!-- Add User Modal -->
+        <div class="modal" id="userModal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal('userModal')">&times;</span>
+                <form method="POST">
+                    <div>
+                        <label for="username">Username</label>
+                        <input type="text" id="addQuickSwitchUser_Username" name="addQuickSwitchUser_Username" placeholder="Enter username">
+                    </div>
+                    <div>
+                        <label for="password">Password</label>
+                        <input type="password" id="addQuickSwitchUser_Password" name="addQuickSwitchUser_Password" placeholder="Enter password">
+                    </div>
+                    <button type="submit" name="addQuickSwitchUser" value="addQuickSwitchUser">SUBMIT</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar" name="sidebar">
+            <div class="sidebar-dropdown">
+                <a onclick="toggleDropdown(event)">INVENTORY</a>
+                <div class="dropdown">
+                    {% for category in category_options %}
+                        <a>| {{category}}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <a href="/transactions" onclick="toggleDropdown(event)">TRANSACTIONS</a>
+            <a href="/bulkIncrease">BULK ADDITION</a>
+            <a href="/bulkDecrease">BULK REMOVAL</a>
+            <a href="/report">REPORT</a>
+        </div>
+        
+        <!-- Main Content -->
+        <!-- color an en kato pu requirement, unavailable -->
+        <div class="inventory-container">
+            <div class="search-filter-container">
+                <!-- Search Bar -->
+                <input type="text" id="searchBar" placeholder="Search a product..." onkeyup="performSearch()">
+                <!-- Filter Button -->
+                <button class="filter-btn" id="filterButton" onclick="openModal('filterModal')">Filters</button>
+                <!-- Add New Entry Button -->
+                <button class="add-entry-btn" id="addEntryButton" onclick="openModal('addEntryModal')">ADD NEW ENTRY</button>
+                <!-- View full inventory again -->
+                <form action="/inventory" method="GET" style="display: inline;">
+                    <button class="viewFullInventory-btn" id="viewFullInventoryButton" name="viewFullInventoryButton" value="viewFullInventoryButton">VIEW FULL INVENTORY</button>
+                </form>
+
+                <div id="searchDropdown"></div>
+            </div>
+            
+            <!-- Filter Modal -->
+            <div id="filterModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('filterModal')">&times;</span>
+                    <form method="POST">
+                        <!-- Category Filter -->
+                        <div>
+                            <label for="filterCategory">Category:</label>
+                            <select name="filterCategory" id="filterCategory">
+                                <option value="">All</option>
+                                {% for category in category_options %}
+                                    <option value="{{ category }}">{{ category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- Supplier Filter -->
+                        <div>
+                            <label for="filterSupplier">Supplier:</label>
+                            <select name="filterSupplier" id="filterSupplier">
+                                <option value="">All</option>
+                                {% for supplier in supplier_options %}
+                                    <option value="{{ supplier }}">{{ supplier }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- Quantity Filter -->
+                        <div>
+                            <label for="filterQuantity">Quantity:</label>
+                            <select name="filterQuantity" id="filterQuantity">
+                                <option value="">All</option>
+                                <option value="zero">Zero</option>
+                                <option value="below_minimum">Below Minimum</option>
+                                <option value="close_to_minimum">Close to Minimum</option>
+                                <option value="many">Many</option>
+                            </select>
+                        </div>
+                        <button type="submit">Apply Filters</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ADD NEW ENTRY Modal -->
+            <div id="addEntryModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('addEntryModal')">&times;</span>
+                    <h2 style="text-align: center; color: #4a007e;">ADD NEW ENTRY</h2>
+                    <form id="createEntry" method="post">
+                        <div>
+                            <label for="item_photo">Picture URL:</label>
+                            <input type="text" id="item_photo" name="item_photo">
+                        </div>
+                        <div>
+                            <label for="item_category">Category:</label>
+                            <input type="text" id="item_category" name="item_category" pattern="[a-zA-z]{,150}" required>
+                        </div>
+                        <div>
+                            <label for="item_name">Name:</label>
+                            <input type="text" id="item_name" name="item_name" required>
+                        </div>
+                        <div>
+                            <label for="item_size">Size in ml:</label>
+                            <input type="number" id="item_size" name="item_size" min="0" required>
+                        </div>
+                        <div>
+                            <label for="item_supplier">Supplier:</label>
+                            <input type="text" id="item_supplier" name="item_supplier" required>
+                        </div>
+                        <div>
+                            <label for="item_min_requirement">Min Requirement:</label>
+                            <input type="number" id="item_min_requirement" name="item_min_requirement" min="0" required>
+                        </div>
+                        <div>
+                            <label for="item_quantity">Starting Quantity:</label>
+                            <input type="number" id="item_quantity" name="item_quantity" min="0" required>
+                        </div>
+                        <button class="add-new-btn" type="submit" name="createEntry" value="createEntry">Save</button>
+                    </form>
+                </div>
+            </div>
+
+            {% for category in valid_categories %}
+                <section id="{{ category }}" class="inventory-section">
+                    <h2>{{ category }}</h2>
+                    <div class="entry-list">
+                    {% for entry in inventory_data %}
+                        {% if entry['category'] == category %}
+                            <div class="inventory-entry" data-entry-id="{{ entry['entry_id'] }}">
+                                <img src="{{ entry['photo'] or 'static/images/default_bottle.avif' }}" alt="{{ entry['name'] }}" class="entry-image"/>
+                                <div class="entry-details">
+                                    <span class="entry-info">
+                                        <span class="entry-text">
+                                            <strong class="entry-name">{{ entry['name'] }}</strong>
+                                            {{ entry['size'] ~ ' ML' if 1000 > entry['size'] else (entry['size'] / 1000) ~ ' L' }} | 
+                                            Supplier: {{ entry['supplier'] }} | 
+                                            Min: {{ entry['min_requirement'] }}
+                                        </span>
+                                        <span class="entry-quantity">
+                                            <button class="quantity-btn" onclick="changeQuantity(this, -1)">-</button>
+                                            <span class="quantity-value" min="0" style="color: {{ entry['color'] }};">{{ entry['qnt'] }}</span>
+                                            <button class="quantity-btn" onclick="changeQuantity(this, 1)">+</button>
+                                        </span>
+                                    </span>
+                                </div>
+                                <img src="../static/images/edit_pen.svg" alt="EDIT" class="edit-button" 
+                                        onclick="openEditModal('{{ entry['entry_id'] }}', '{{ entry['photo'] }}','{{ entry['name'] }}', '{{ entry['size'] }}',
+                                        '{{ entry['category'] }}', '{{ entry['supplier'] }}', '{{ entry['min_requirement'] }}')">
+                                        <!-- The said errors are wrong. -->
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+                </section>
+            {% endfor %}
+            
+            <!-- Edit Modal -->
+            <div id="editModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal('editModal')">&times;</span>
+                    <h2 style="text-align: center; color: #4a007e;">EDIT PRODUCT</h2>
+                    <form id="updateEntry" name="updateEntry">
+                        <input type="hidden" name="u_item_uid"/>
+                        <div>
+                            <label for="u_item_photo">Photo URL:</label>
+                            <input type="text" id="u_item_photo" name="u_item_photo">
+                        </div>
+                        <div>
+                            <label for="u_item_name">Name:</label>
+                            <input type="text" id="u_item_name" name="u_item_name">
+                        </div>
+                        <div>
+                            <label for="u_item_size">Size:</label>
+                            <input type="text" id="u_item_size" name="u_item_size">
+                        </div>
+                        <div>
+                            <label for="u_item_category">Category:</label>
+                            <input type="text" id="u_item_category" name="u_item_category">
+                        </div>
+                        <div>
+                            <label for="u_item_supplier">Supplier:</label>
+                            <input type="text" id="u_item_supplier" name="u_item_supplier">
+                        </div>
+                        <div>
+                            <label for="u_item_min_requirement">Minimum Requirement:</label>
+                            <input type="number" id="u_item_min_requirement" name="u_item_min_requirement">
+                        </div>
+                        <button type="button" onclick="saveEdit()" name="updateEntry" >Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Flash Modal -->
+        {% if get_flashed_messages() %}
+            <div id="flashModal" class="modal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeFlashModal()">&times;</span>
+                    <p id="flashMessage">{{ get_flashed_messages()[0] }}</p>
+                </div>
+            </div>
+        {% endif %}
+        <!-- Link to JavaScript File -->
+        <script src="..\static\js\scripts.js"></script>
+        <!-- Flash message logic -->
+        <script>
+            // Close the flash modal
+            function closeFlashModal() {
+                document.getElementById("flashModal").style.display = "none";
+            }
+
+            // Automatically show the flash modal if the flash message exists
+            {% if get_flashed_messages() %}
+                document.getElementById("flashModal").style.display = "block";
+            {% endif %}
+        </script>
+    </body>
+</html>
