@@ -14,6 +14,17 @@ def search_inventory(uid, query):
     rows = cursor.fetchall()
     connection.close()
     inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8]} for elem in rows]
+    i = 0
+    for entry in inventory:
+        if entry['qnt'] == 0:
+            i = 0
+        elif entry['qnt'] < entry['min_requirement']:
+            i = 1
+        elif entry['qnt'] < entry['min_requirement'] + 5:
+            i = 2
+        else:
+            i = 3
+        entry['color'] = COLORS[i]
     return inventory    
 
 def get_quick_switch_users(uid: int) -> list[str]:
@@ -114,7 +125,7 @@ def get_inventory_data(uid):
     rows = cursor.fetchall()
     connection.close()
     inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8]} for elem in rows]
-    # TO
+
     i = 0
     for entry in inventory:
         if entry['qnt'] == 0:
@@ -126,7 +137,6 @@ def get_inventory_data(uid):
         else:
             i = 3
         entry['color'] = COLORS[i]
-    # TO
     return inventory
 
 def get_entry(uid, entry_id):
@@ -139,6 +149,17 @@ def get_entry(uid, entry_id):
     rows = cursor.fetchall()
     connection.close()
     inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8]} for elem in rows]
+    i = 0
+    for entry in inventory:
+        if entry['qnt'] == 0:
+            i = 0
+        elif entry['qnt'] < entry['min_requirement']:
+            i = 1
+        elif entry['qnt'] < entry['min_requirement'] + 5:
+            i = 2
+        else:
+            i = 3
+        entry['color'] = COLORS[i]
     return inventory
 
 def get_category_options(uid: int) -> list[str]: 
@@ -244,7 +265,7 @@ def get_filtered_inventory(uid: int, category: str, supplier: str, qnt_filter: s
 
     finalFilter = [x for x in catFilter if x in supFilter and x in qntFilter]
     inventory = [{"min_requirement" : elem[0], "qnt" : elem[1], "size" : elem[2], "category" : elem[3], "name" : elem[4], "supplier" : elem[5], "photo" : elem[6], "entry_id" : elem[7], "uid" : elem[8]} for elem in finalFilter]
-    # TO
+
     i = 0
     for entry in inventory:
         if entry['qnt'] == 0:
@@ -256,7 +277,6 @@ def get_filtered_inventory(uid: int, category: str, supplier: str, qnt_filter: s
         else:
             i = 3
         entry['color'] = COLORS[i]
-    # TO
     return inventory
 
 def generate_report(uid): 

@@ -33,6 +33,7 @@ def selectedItem():
         quick_switch_users = db.get_quick_switch_users(session.get('UID'))
         category_options = db.get_category_options(session.get('UID'))
         supplier_options = db.get_supplier_options(session.get('UID'))
+        valid_categories: set = {item['category'] for item in entry_data}
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -42,7 +43,8 @@ def selectedItem():
         inventory_data=entry_data,
         quick_switch_users=quick_switch_users,
         category_options=category_options,
-        supplier_options=supplier_options
+        supplier_options=supplier_options,
+        valid_categories=valid_categories
     )
     return jsonify({'html': rendered_template})
 
