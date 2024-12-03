@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect, session, request, flash, jsonify, send_from_directory
+from flask import Flask, render_template, url_for, redirect, session, request, flash, jsonify, send_from_directory 
 import os
 from db import db
 
