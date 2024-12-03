@@ -1,4 +1,5 @@
-from flask import Flask, render_template, url_for, redirect, session, request, flash, jsonify
+from flask import Flask, render_template, url_for, redirect, session, request, flash, jsonify, send_from_directory
+import os
 from db import db
 
 app: Flask = Flask(__name__)
@@ -7,6 +8,14 @@ app.config['SECRET_KEY'] = 'team3_key_super_secret'
 
 to_be_removed_items: list[dict] = []
 to_be_added_items: list[dict] = []
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, 'static', 'images'),
+        'favicon.ico',
+        mimetype='image/vnd.microsoft.icon'
+    )
 
 @app.route('/search', methods=['GET'])
 def search():
