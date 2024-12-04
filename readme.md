@@ -51,5 +51,69 @@ The front end used html, css, and little javascript to visualize the idea. Also 
 ### Docker
 The project is dockerized in order to be portable. The functionality does not change, rather it gets better and more stable.
 
-#### TODOs
-Implement colour codes.
+## Flask Application API Endpoints
+
+### General Endpoints
+
+- **GET `/favicon.ico`**
+  - **Description:** Serves the `favicon.ico` from the static directory.
+
+- **GET `/`**
+  - **Description:** Index page, Redirects to the login page.
+
+### Authentication
+
+- **GET, POST `/login`**
+  - **Description:** Handles user login. Displays the login form on GET and processes login on POST.
+
+- **GET, POST `/register`**
+  - **Description:** Handles new user registration. Displays the registration form on GET and processes registration on POST.
+
+- **GET `/logout`**
+  - **Description:** Logs out the user and redirects to the login page.
+
+### Inventory Management
+
+- **GET, POST `/inventory`**
+  - **Description:** Main inventory page. Displays all inventory items on GET. Handles item creation and filtering on POST.
+
+- **GET `/selectedItem`**
+  - **Description:** Fetches and displays detailed data for a selected inventory item.
+
+- **POST `/updateQuantity`**
+  - **Description:** Updates the quantity of an inventory item.
+
+- **POST `/updateEntry`**
+  - **Description:** Updates detailed information of an inventory item.
+
+### Bulk Operations
+
+- **GET, POST `/bulkIncrease`**
+  - **Description:** Manages bulk increases in inventory quantities. Displays current bulk list on GET and processes additions or the final bulk increase on POST.
+
+- **GET, POST `/bulkDecrease`**
+  - **Description:** Manages bulk decreases in inventory quantities. Displays current bulk list on GET and processes removals or the final bulk decrease on POST.
+
+- **POST `/removeDecrease`**
+  - **Description:** Removes an item from the bulk decrease list.
+
+- **POST `/removeIncrease`**
+  - **Description:** Removes an item from the bulk increase list.
+
+### Transaction Handling
+
+- **GET, POST `/transactions`**
+  - **Description:** Handles transactions between users. Displays pending transactions on GET and processes transaction responses on POST.
+
+### Reporting
+
+- **GET, POST `/report`**
+  - **Description:** Displays generated reports and manages user switching through quick switch functionality.
+
+### Search and Filter
+
+- **GET `/search`**
+  - **Description:** Returns search results as JSON based on the user's query.
+
+Each endpoint is designed to support specific functionalities within the inventory management system, facilitating efficient and user-friendly interactions.
+
