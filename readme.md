@@ -18,6 +18,7 @@ We are team 3 and decided to implement the stock tracking web application idea.
 - It enables the users to view all of their entries, edit them, and even change their quantity settings.
 - Furthermore, the user can add new entries to their inventory.
 - Also, the user can search for a specific product, or even filter their inventory to their needs.
+- Lastly, the inventory color codes each entry based on the remaining quantity and the minimum requirement given by the user.
 
 ## Product Exchange
 - The users can request or even send products to other users.
